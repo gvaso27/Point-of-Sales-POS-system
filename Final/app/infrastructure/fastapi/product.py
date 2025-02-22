@@ -11,7 +11,7 @@ from app.infrastructure.fastapi.dependables import ProductRepositoryDependable
 product_api = APIRouter(tags=["Products"])
 
 
-@product_api.get(  # type: ignore
+@product_api.get(
     "/products/{product_id}", status_code=200, response_model=dict[str, Any]
 )
 def read_product(

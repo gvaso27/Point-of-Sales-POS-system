@@ -13,9 +13,9 @@ update:
 	poetry update
 
 format:
-	poetry run ruff format playground tests
-	poetry run ruff check  playground tests --fix
+	poetry run ruff format app
+	poetry run ruff check  app --fix
 
 lint:
-	poetry run ruff check playground tests
-	poetry run mypy playground tests
+	poetry run ruff check app
+	poetry run mypy app
