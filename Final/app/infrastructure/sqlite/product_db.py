@@ -48,3 +48,30 @@ class ProductDb(object):
                 )
             else:
                 raise Exception(f"product with {product_id} does not exist")
+
+    def add(self, product: Product) -> Product:
+        insert_query = """
+            INSERT INTO products (id, name, price)
+            VALUES (?, ?, ?);
+        """
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(insert_query, (str(product.id), product.name, product.price))
+            connection.commit()
+            return product
+
+    def find_by_name(self, name: str) -> Product | None:
+        select_query = """
+            SELECT name, price, id FROM products WHERE name = ?;
+        """
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(select_query, (name,))
+            row = cursor.fetchone()
+            if row:
+                return Product(
+                    name=row[0],
+                    price=row[1],
+                    id=row[2],
+                )
+            return None
