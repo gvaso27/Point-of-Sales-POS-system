@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
-from app.core.product import CreateProductRequest, ProductService
+from app.core.product import CreateProductRequest, ProductService, UpdateProductRequest
 from app.infrastructure.fastapi.dependables import ProductRepositoryDependable
 
 product_api: APIRouter = APIRouter()
@@ -21,7 +21,7 @@ def read_product(
 ) -> dict[str, Any] | JSONResponse:
     try:
         return {"product": ProductService(products).read(product_id)}
-    except Exception as e:
+    except ValueError as e:
         return JSONResponse(
             status_code=404,
             content={"error": {"message": str(e)}},
@@ -44,4 +44,18 @@ def create_product(
 def read_all_products(
     products: ProductRepositoryDependable,
 ) -> dict[str, Any]:
-    return {"products": products.read_all()}
+    return {"products": ProductService(products).read_all()}
+
+
+@product_api.patch("/products/{product_id}", status_code=200, response_model=None)
+@no_type_check
+def update_products(
+    request: UpdateProductRequest,
+    product_id: UUID,
+    products: ProductRepositoryDependable,
+) -> None:
+    try:
+        ProductService(products).update_product(request, product_id)
+        return {"product updated"}
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail={"error": {"message": str(e)}})
