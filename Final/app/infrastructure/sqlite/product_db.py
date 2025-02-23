@@ -33,7 +33,7 @@ class ProductDb(object):
             cursor.execute(truncate_products_query)
             connection.commit()
 
-    def read(self, product_id: UUID) -> Product:
+    def read(self, product_id: UUID) -> Product | None:
         select_query = """
             SELECT name, price, id FROM products WHERE id = ?;
         """
@@ -47,8 +47,7 @@ class ProductDb(object):
                     price=row[1],
                     id=row[2],
                 )
-            else:
-                raise Exception(f"product with {product_id} does not exist")
+        return None
 
     def add(self, product: Product) -> Product:
         insert_query = """
@@ -93,3 +92,15 @@ class ProductDb(object):
                 )
                 for row in rows
             ]
+
+    def update(self, product: Product) -> None:
+        update_query = """
+            UPDATE products
+            SET name = ?,
+                price = ?
+            WHERE id = ?
+        """
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(update_query, (product.name, product.price, str(product.id)))
+            connection.commit()
