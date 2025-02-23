@@ -37,3 +37,11 @@ def create_product(
         return {"product": ProductService(products).create(request)}
     except ValueError as e:
         raise HTTPException(status_code=409, detail={"error": {"message": str(e)}})
+
+
+@product_api.get("/products", status_code=200, response_model=dict[str, Any])
+@no_type_check
+def read_all_products(
+    products: ProductRepositoryDependable,
+) -> dict[str, Any]:
+    return {"products": products.read_all()}
