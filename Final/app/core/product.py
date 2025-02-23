@@ -33,6 +33,7 @@ class ProductRepository(Protocol):
     def read_all(self) -> List[Product]:
         pass
 
+
 @dataclass
 class ProductService:
     products: ProductRepository
