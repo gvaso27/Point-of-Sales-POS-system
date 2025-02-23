@@ -15,10 +15,9 @@ def init_app(db_type: str = "sqlite") -> FastAPI:
     app.include_router(product_api)
     app.include_router(campaign_api)
 
-    app.state.product = ProductDb()
-    app.state.campaign = CampaignDb()
     if db_type == "sqlite":
         app.state.product = ProductDb()
+        app.state.campaign = CampaignDb()
     else:
         app.state.product = InMemoryProductDb()
 
