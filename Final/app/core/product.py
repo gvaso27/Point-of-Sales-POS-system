@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import List, Protocol
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
@@ -30,6 +30,8 @@ class ProductRepository(Protocol):
     def find_by_name(self, name: str) -> Product | None:
         pass
 
+    def read_all(self) -> List[Product]:
+        pass
 
 @dataclass
 class ProductService:
@@ -49,3 +51,6 @@ class ProductService:
         product.id = uuid4()
         self.products.add(product)
         return product.id
+
+    def read_all(self) -> List[Product]:
+        return self.products.read_all()

@@ -1,4 +1,5 @@
 import sqlite3
+from typing import List
 from uuid import UUID
 
 from app.core.product import Product
@@ -75,3 +76,20 @@ class ProductDb(object):
                     id=row[2],
                 )
             return None
+
+    def read_all(self) -> List[Product]:
+        select_query = """
+            SELECT name, price, id FROM products;
+        """
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(select_query)
+            rows = cursor.fetchall()
+            return [
+                Product(
+                    name=row[0],
+                    price=row[1],
+                    id=row[2],
+                )
+                for row in rows
+            ]
