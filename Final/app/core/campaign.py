@@ -78,7 +78,7 @@ class CampaignService:
         Calculate total discount based on active campaigns
         """
         total_discount = 0.0
-        active_campaigns = self.read_active()
+        active_campaigns = self.read_all()
 
         for campaign in active_campaigns:
             if campaign.campaign_type == "discount":

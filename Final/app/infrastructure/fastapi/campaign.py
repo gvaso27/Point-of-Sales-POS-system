@@ -1,10 +1,9 @@
-from dataclasses import asdict
-from typing import Any, Dict, List
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.campaign import CreateCampaignRequest, CampaignService
+from app.core.campaign import CampaignService, CreateCampaignRequest
 from app.infrastructure.fastapi.dependables import CampaignRepositoryDependable
 
 campaign_api: APIRouter = APIRouter()
