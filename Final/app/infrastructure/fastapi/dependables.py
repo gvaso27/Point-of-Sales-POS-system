@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from fastapi.requests import Request
@@ -26,7 +26,7 @@ def get_receipt_item_repository(request: Request) -> ReceiptItemRepository:
     return request.app.state.receipt_items  # type: ignore
 
 
-def get_currency_service(request: Request) -> CurrencyService:
+def get_currency_service(request: Request) -> Any:
     return request.app.state.currency_service
 
 

@@ -92,7 +92,9 @@ class ReceiptDb(ReceiptRepository):
                     receipt.subtotal,
                     receipt.total_discount,
                     receipt.payment_amount,
-                    receipt.payment_currency.value,
+                    receipt.payment_currency.value
+                    if receipt.payment_currency
+                    else None,
                     str(receipt.id)
                 )
             )
@@ -125,3 +127,4 @@ class ReceiptDb(ReceiptRepository):
                     payment_currency=payment_currency
                 )
                 receipts.append(receipt)
+        return receipts

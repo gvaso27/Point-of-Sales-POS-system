@@ -25,7 +25,7 @@ class Receipt:
     subtotal: float = 0.0
     total_discount: float = 0.0
     payment_amount: float = 0.0
-    payment_currency: Currency = None
+    payment_currency: Currency | None = Currency.GEL
 
     @property
     def total(self) -> float:

@@ -6,11 +6,11 @@ from fastapi import APIRouter, HTTPException
 from app.core.currency import Currency
 from app.core.product import ProductService
 from app.core.receipt import (
-    AddItemRequest,
     PaymentRequest,
     QuoteRequest,
     ReceiptService,
 )
+from app.core.receipt_item import AddItemRequest
 from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,

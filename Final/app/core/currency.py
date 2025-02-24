@@ -13,9 +13,9 @@ class Currency(str, Enum):
 
 @dataclass
 class CurrencyService:
-    _rates: Dict[str, float] = None
+    _rates: Dict[str, float]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._rates = {}
         self._update_rates()
 

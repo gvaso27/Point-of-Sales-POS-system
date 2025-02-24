@@ -9,6 +9,7 @@ class InMemoryReceiptDb(ReceiptRepository):
         self.receipts: Dict[str, Receipt] = {}
 
     def up(self) -> None:
+        # No setup needed for in-memory storage
         pass
 
     def create(self, receipt: Receipt) -> Receipt:
@@ -18,8 +19,12 @@ class InMemoryReceiptDb(ReceiptRepository):
     def read(self, receipt_id: UUID) -> Receipt | None:
         return self.receipts.get(str(receipt_id))
 
-    def read_all(self) -> List[Receipt]:
-        return list(self.receipts.values())
+    def update(self, receipt: Receipt) -> None:
+        if str(receipt.id) in self.receipts:
+            self.receipts[str(receipt.id)] = receipt
 
-    def delete(self, receipt_id: UUID) -> None:
-        self.receipts.pop(str(receipt_id), None)
+    def read_by_shift(self, shift_id: UUID) -> List[Receipt]:
+        return [
+            receipt for receipt in self.receipts.values()
+            if receipt.shift_id == shift_id
+        ]
