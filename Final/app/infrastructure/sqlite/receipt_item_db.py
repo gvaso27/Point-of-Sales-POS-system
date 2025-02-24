@@ -32,13 +32,13 @@ class ReceiptItemDb(ReceiptItemRepository):
             cursor.execute(
                 """
                 INSERT INTO receipt_items (
-                    id, receipt_id, product_id, quantity,
+                    id, receipt_id, product_id, product_name, quantity,
                     unit_price, discount
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?,?)
                 """,
                 (
                     str(item.id), str(item.receipt_id),
-                    str(item.product_id), item.quantity,
+                    str(item.product_id), item.product_name, item.quantity,
                     item.unit_price, item.discount
                 )
             )
@@ -58,9 +58,10 @@ class ReceiptItemDb(ReceiptItemRepository):
                     id=UUID(row[0]),
                     receipt_id=UUID(row[1]),
                     product_id=UUID(row[2]),
-                    quantity=row[3],
-                    unit_price=row[4],
-                    discount=row[5]
+                    product_name=row[3],
+                    quantity=row[4],
+                    unit_price=row[5],
+                    discount=row[6]
                 )
             return None
 
@@ -72,14 +73,16 @@ class ReceiptItemDb(ReceiptItemRepository):
                 (str(receipt_id),)
             )
             rows = cursor.fetchall()
+            print(rows)
             return [
                 ReceiptItem(
                     id=UUID(row[0]),
                     receipt_id=UUID(row[1]),
                     product_id=UUID(row[2]),
-                    quantity=row[3],
-                    unit_price=row[4],
-                    discount=row[5]
+                    product_name=row[3],
+                    quantity=row[4],
+                    unit_price=row[5],
+                    discount=row[6]
                 )
                 for row in rows
             ]
