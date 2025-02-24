@@ -106,7 +106,8 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.OPEN:
-            raise ValueError(f"Cannot calculate total for receipt in {receipt.state} state")
+            raise ValueError(f"Cannot calculate total for "
+                             f"receipt in {receipt.state} state")
 
         self.receipts.update(receipt)
 
@@ -118,7 +119,7 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.CLOSED:
-            raise ValueError(f"Cannot close receipt that is not in CLOSED state")
+            raise ValueError("Cannot close receipt that is not in CLOSED state")
 
         pass
 

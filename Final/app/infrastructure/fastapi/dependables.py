@@ -1,9 +1,9 @@
 from typing import Annotated
 
-from app.core.campaign import CampaignRepository
 from fastapi import Depends
 from fastapi.requests import Request
 
+from app.core.campaign import CampaignRepository
 from app.core.currency import CurrencyService
 from app.core.product import ProductRepository
 from app.core.receipt import ReceiptRepository
