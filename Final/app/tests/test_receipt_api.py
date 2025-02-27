@@ -7,8 +7,8 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from app.core.currency import Currency
-from app.core.product import Product
-from app.core.receipt import ReceiptState
+from app.core.Models.product import Product
+from app.core.Models.receipt import ReceiptState
 from app.infrastructure.sqlite.inmemory.producs_in_memory_db import InMemoryProductDb
 from app.infrastructure.sqlite.inmemory.receipt_in_memory_db import InMemoryReceiptDb
 from app.infrastructure.sqlite.inmemory.receipt_item_in_memory_db import (

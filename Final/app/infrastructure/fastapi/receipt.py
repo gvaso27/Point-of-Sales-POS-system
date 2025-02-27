@@ -3,7 +3,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.Models.receipt import GetReceiptResponse, AddItemRequest, QuoteRequest, ReceiptProduct
 from app.core.campaign_observers import (
     BuyNGetNCampaign,
     ComboCampaign,
@@ -11,9 +10,15 @@ from app.core.campaign_observers import (
     WholeReceiptDiscountCampaign,
 )
 from app.core.currency import Currency
+from app.core.Models.receipt import (
+    AddItemRequest,
+    GetReceiptResponse,
+    PaymentRequest,
+    QuoteRequest,
+    ReceiptProduct,
+)
 from app.core.product import ProductService
 from app.core.receipt import (
-    PaymentRequest,
     ReceiptService,
 )
 from app.infrastructure.fastapi.dependables import (
