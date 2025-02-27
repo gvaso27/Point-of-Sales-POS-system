@@ -129,3 +129,28 @@ class ReceiptDb(ReceiptRepository):
                 )
                 receipts.append(receipt)
         return receipts
+
+    def get_all(self) -> List[Receipt]:
+        with sqlite3.connect(self.db_path) as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM receipts")
+            rows = cursor.fetchall()
+            receipts = []
+            for row in rows:
+                payment_currency = None
+                if row['payment_currency']:
+                    payment_currency = Currency(row['payment_currency'])
+
+                receipt = Receipt(
+                    id=UUID(row['id']),
+                    shift_id=UUID(row['shift_id']),
+                    state=ReceiptState(row['state']),
+                    created_at=row['created_at'],
+                    subtotal=row['subtotal'],
+                    total_discount=row['total_discount'],
+                    payment_amount=row['payment_amount'],
+                    payment_currency=payment_currency
+                )
+                receipts.append(receipt)
+        return receipts

@@ -3,8 +3,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
+from app.core.report import XReport, ReportService, ReportRevenue
 from app.core.shift import ShiftService
-from app.infrastructure.fastapi.dependables import ShiftRepositoryDependable
+from app.infrastructure.fastapi.dependables import ShiftRepositoryDependable, ReceiptRepositoryDependable, \
+    ReceiptItemRepositoryDependable, ShiftServiceDependable
 
 shift_api: APIRouter = APIRouter()
 
@@ -38,21 +40,23 @@ def close_shift(shift_id: UUID, shifts: ShiftRepositoryDependable) -> None:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@shift_api.get("/shifts/x-reports/{shift_id}")
-def get_x_report(shift_id: UUID, shifts: ShiftRepositoryDependable) -> dict[str, Any]:
+@shift_api.get("/shifts/x-reports")
+def get_x_report(receipts: ReceiptRepositoryDependable,
+                 receipt_items: ReceiptItemRepositoryDependable,
+                 shifts: ShiftServiceDependable) -> XReport:
     try:
-        service = ShiftService(shifts)
-        report = service.get_x_report(shift_id)
-        return report
+        service = ReportService(receipts, receipt_items, shifts)
+        return service.generate_x_report()
     except ValueError as e:
         raise HTTPException(status_code=404, detail={"error": {"message": str(e)}})
 
 
-@shift_api.get("/shifts/y-reports/{shift_id}")
-def get_y_report(shift_id: UUID, shifts: ShiftRepositoryDependable) -> dict[str, Any]:
+@shift_api.get("/shifts/z-reports")
+def get_y_report(receipts: ReceiptRepositoryDependable,
+                 receipt_items: ReceiptItemRepositoryDependable,
+                 shifts: ShiftServiceDependable) -> list[ReportRevenue]:
     try:
-        service = ShiftService(shifts)
-        report = service.get_y_report(shift_id)
-        return report
+        service = ReportService(receipts, receipt_items, shifts)
+        return service.generate_z_report()
     except ValueError as e:
         raise HTTPException(status_code=404, detail={"error": {"message": str(e)}})

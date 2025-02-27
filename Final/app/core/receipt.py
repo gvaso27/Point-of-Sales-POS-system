@@ -85,6 +85,9 @@ class ReceiptRepository(Protocol):
     def read_by_shift(self, shift_id: UUID) -> List[Receipt]:
         pass
 
+    def get_all(self) -> List[Receipt]:
+        pass
+
 
 @dataclass
 class ReceiptService:
