@@ -4,8 +4,6 @@ from enum import Enum
 from typing import List
 from uuid import UUID, uuid4
 
-from app.infrastructure.sqlite.shift_db import ShiftDb
-
 
 class ShiftState(str, Enum):
     OPEN = "OPEN"
@@ -34,7 +32,11 @@ class ShiftRepository(Protocol):
 
 @dataclass
 class ShiftService:
-    shift_repo: ShiftDb
+    shift_repo: ShiftRepository
+
+    def __init__(self, shift_repo : ShiftRepository) -> None:
+        self.shift_repo = shift_repo
+        pass
 
     def create(self) -> UUID:
         open_shifts = self.shift_repo.read_by_state(ShiftState.OPEN)
@@ -59,3 +61,9 @@ class ShiftService:
 
         updated_shift = ShiftItem(shift_id=shift.shift_id, state=ShiftState.CLOSED)
         self.shift_repo.update(updated_shift)
+
+    def get_open_shift(self) -> ShiftItem | None:
+        open_shifts = self.shift_repo.read_by_state(ShiftState.OPEN)
+        if open_shifts:
+            return open_shifts[0]
+        return None

@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends
 from fastapi.requests import Request
@@ -8,6 +8,7 @@ from app.core.currency import CurrencyService
 from app.core.product import ProductRepository
 from app.core.receipt import ReceiptRepository
 from app.core.receipt_item import ReceiptItemRepository
+from app.core.shift import ShiftRepository, ShiftService
 
 
 def get_product_repository(request: Request) -> ProductRepository:
@@ -26,9 +27,16 @@ def get_receipt_item_repository(request: Request) -> ReceiptItemRepository:
     return request.app.state.receipt_items  # type: ignore
 
 
-def get_currency_service(request: Request) -> Any:
+def get_currency_service(request: Request) -> CurrencyService:
     return request.app.state.currency_service
 
+
+def get_shift_repository(request: Request) -> ShiftRepository:
+    return request.app.state.shift
+
+
+def get_shift_service(request: Request) -> ShiftService:
+    return request.app.state.shift_service
 
 CurrencyServiceDependable = Annotated[
     CurrencyService, Depends(get_currency_service)
@@ -48,4 +56,12 @@ ReceiptRepositoryDependable = Annotated[
 
 ReceiptItemRepositoryDependable = Annotated[
     ReceiptItemRepository, Depends(get_receipt_item_repository)
+]
+
+ShiftRepositoryDependable = Annotated[
+    ShiftRepository, Depends(get_shift_repository)
+]
+
+ShiftServiceDependable = Annotated[
+    ShiftService, Depends(get_shift_service)
 ]

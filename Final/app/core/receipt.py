@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from app.core.currency import Currency, CurrencyService
 from app.core.product import Product
 from app.core.receipt_item import AddItemRequest, ReceiptItem, ReceiptItemRepository
+from app.core.shift import ShiftService
 
 
 class ReceiptState(str, Enum):
@@ -21,8 +22,8 @@ class ReceiptState(str, Enum):
 class Receipt:
     shift_id: UUID
     state: ReceiptState = ReceiptState.OPEN
-    created_at: datetime = field(default_factory=datetime.now)
     id: UUID = field(default_factory=uuid4)
+    created_at: datetime = field(default_factory=datetime.now)
     subtotal: float = 0.0
     total_discount: float = 0.0
     payment_amount: float = 0.0
@@ -89,10 +90,15 @@ class ReceiptRepository(Protocol):
 class ReceiptService:
     receipts: ReceiptRepository
     receipt_items: ReceiptItemRepository
+    shift_service: ShiftService
     currency_service: CurrencyService
 
     def create(self) -> UUID:
-        receipt = Receipt(shift_id=uuid4())
+        shift_id = self.shift_service.get_open_shift()
+        if not shift_id:
+            raise ValueError(f"Shift is not open")
+        receipt = Receipt(id=uuid4(),
+                          shift_id=shift_id.shift_id)
         self.receipts.create(receipt)
         return receipt.id
 

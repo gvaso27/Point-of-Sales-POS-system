@@ -15,28 +15,29 @@ from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,
     ReceiptItemRepositoryDependable,
-    ReceiptRepositoryDependable,
+    ReceiptRepositoryDependable, ShiftServiceDependable,
 )
 
 receipt_api: APIRouter = APIRouter()
 
 
-@receipt_api.post("/receipts", status_code=201)
+@receipt_api.post("/newReceipt", status_code=201)
 @no_type_check
 def create_receipt(
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items, shift_service, currency_service)
         receipt_id = service.create()
         return {"receipt_id": receipt_id}
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/products")
+@receipt_api.post("/receipts/addItem/{receipt_id}")
 @no_type_check
 def add_item(
         receipt_id: UUID,
@@ -54,7 +55,7 @@ def add_item(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.get("/receipts/{receipt_id}/calculate")
+@receipt_api.get("/receipts/calculate/{receipt_id}")
 @no_type_check
 def calculate_total(
         receipt_id: UUID,
@@ -70,7 +71,7 @@ def calculate_total(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.get("/receipts/{receipt_id}/quotes")
+@receipt_api.get("/receipts/quotes/{receipt_id}")
 @no_type_check
 def get_quote(
         receipt_id: UUID,
@@ -92,7 +93,7 @@ def get_quote(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/close")
+@receipt_api.post("/receipts/close/{receipt_id}")
 @no_type_check
 def close_receipt(
         receipt_id: UUID,
@@ -146,7 +147,7 @@ def get_receipt(
         raise HTTPException(status_code=404, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/payments")
+@receipt_api.post("/receipts/pay/{receipt_id}")
 @no_type_check
 def process_payment(
         receipt_id: UUID,

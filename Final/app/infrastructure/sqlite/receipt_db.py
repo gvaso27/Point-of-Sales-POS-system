@@ -23,7 +23,8 @@ class ReceiptDb(ReceiptRepository):
                     subtotal FLOAT,
                     total_discount FLOAT,
                     payment_amount FLOAT,
-                    payment_currency TEXT
+                    payment_currency TEXT,
+                    FOREIGN KEY (shift_id) REFERENCES shifts (shift_id)
                 )
             """)
 

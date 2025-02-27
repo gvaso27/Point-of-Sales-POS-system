@@ -90,7 +90,6 @@ class ReceiptItemDb(ReceiptItemRepository):
                 (str(receipt_id),)
             )
             rows = cursor.fetchall()
-            print(rows)
             return [
                 ReceiptItem(
                     receipt_id=UUID(row[0]),
