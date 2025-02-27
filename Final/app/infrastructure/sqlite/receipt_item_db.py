@@ -14,17 +14,15 @@ class ReceiptItemDb(ReceiptItemRepository):
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS receipt_items (
-                    id TEXT PRIMARY KEY,
-                    receipt_id TEXT,
-                    product_id TEXT,
-                    product_name TEXT,
-                    quantity INTEGER,
-                    unit_price FLOAT,
-                    discount FLOAT,
-                    FOREIGN KEY (receipt_id) REFERENCES receipts (id)
-                )
-            """)
+                   CREATE TABLE IF NOT EXISTS receipt_items (
+                       receipt_id TEXT NOT NULL,
+                       product_id TEXT NOT NULL,
+                       quantity INTEGER,
+                       PRIMARY KEY (receipt_id, product_id),
+                       FOREIGN KEY (receipt_id) REFERENCES receipts (id),
+                       FOREIGN KEY (product_id) REFERENCES products (id)
+                   )
+               """)
 
     def create(self, item: ReceiptItem) -> ReceiptItem:
         with sqlite3.connect(self.db_path) as connection:
@@ -32,65 +30,71 @@ class ReceiptItemDb(ReceiptItemRepository):
             cursor.execute(
                 """
                 INSERT INTO receipt_items (
-                    id, receipt_id, product_id, product_name, quantity,
-                    unit_price, discount
-                ) VALUES (?, ?, ?, ?, ?, ?,?)
+                    receipt_id, product_id, quantity
+                ) VALUES (?, ?, ?)
                 """,
                 (
-                    str(item.id),
                     str(item.receipt_id),
                     str(item.product_id),
-                    item.product_name,
                     item.quantity,
-                    item.unit_price,
-                    item.discount,
-                ),
+                )
             )
             connection.commit()
             return item
 
-    def read(self, item_id: UUID) -> ReceiptItem | None:
+    def update(self, item: ReceiptItem) -> None:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute("SELECT * FROM receipt_items WHERE id = ?", (str(item_id),))
+            cursor.execute(
+                """
+                UPDATE receipt_items
+                SET quantity = ?
+                WHERE receipt_id = ? AND product_id = ?
+                """,
+                (
+                    item.quantity,
+                    str(item.receipt_id),
+                    str(item.product_id),
+                )
+            )
+            connection.commit()
+
+    def read(self, receipt_id: UUID, item_id: UUID) -> ReceiptItem | None:
+        with sqlite3.connect(self.db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT * FROM receipt_items 
+                WHERE product_id = ? AND receipt_id = ?
+                """,
+                (
+                    str(item_id),
+                    str(receipt_id),
+                )
+            )
             row = cursor.fetchone()
             if row:
                 return ReceiptItem(
-                    id=UUID(row[0]),
-                    receipt_id=UUID(row[1]),
-                    product_id=UUID(row[2]),
-                    product_name=row[3],
-                    quantity=row[4],
-                    unit_price=row[5],
-                    discount=row[6],
+                    receipt_id=UUID(row[0]),
+                    product_id=UUID(row[1]),
+                    quantity=row[2]
                 )
             return None
 
+    # todo
     def read_by_receipt(self, receipt_id: UUID) -> List[ReceiptItem]:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM receipt_items WHERE receipt_id = ?", (str(receipt_id),)
+                "SELECT * FROM receipt_items WHERE receipt_id = ?",
+                (str(receipt_id),)
             )
             rows = cursor.fetchall()
-            print(rows)
             return [
                 ReceiptItem(
-                    id=UUID(row[0]),
-                    receipt_id=UUID(row[1]),
-                    product_id=UUID(row[2]),
-                    product_name=row[3],
-                    quantity=row[4],
-                    unit_price=row[5],
-                    discount=row[6],
+                    receipt_id=UUID(row[0]),
+                    product_id=UUID(row[1]),
+                    quantity=row[2]
                 )
                 for row in rows
             ]
-
-    def delete_by_receipt(self, receipt_id: UUID) -> None:
-        with sqlite3.connect(self.db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                "DELETE FROM receipt_items WHERE receipt_id = ?", (str(receipt_id),)
-            )
-            connection.commit()

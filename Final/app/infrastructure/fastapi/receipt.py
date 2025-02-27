@@ -8,43 +8,44 @@ from app.core.product import ProductService
 from app.core.receipt import (
     PaymentRequest,
     QuoteRequest,
-    ReceiptService,
+    ReceiptService, GetReceiptResponse, ReceiptProduct,
 )
 from app.core.receipt_item import AddItemRequest
 from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,
     ReceiptItemRepositoryDependable,
-    ReceiptRepositoryDependable,
+    ReceiptRepositoryDependable, ShiftServiceDependable,
 )
 
 receipt_api: APIRouter = APIRouter()
 
 
-@receipt_api.post("/receipts", status_code=201)
+@receipt_api.post("/newReceipt", status_code=201)
 @no_type_check
 def create_receipt(
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items, shift_service, currency_service)
         receipt_id = service.create()
         return {"receipt_id": receipt_id}
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/products")
+@receipt_api.post("/receipts/addItem/{receipt_id}")
 @no_type_check
 def add_item(
-    receipt_id: UUID,
-    request: AddItemRequest,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
-    products: ProductRepositoryDependable,
+        receipt_id: UUID,
+        request: AddItemRequest,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable,
+        products: ProductRepositoryDependable
 ) -> None:
     try:
         product = ProductService(products).read(request.product_id)
@@ -54,13 +55,13 @@ def add_item(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/calculate")
+@receipt_api.get("/receipts/calculate/{receipt_id}")
 @no_type_check
 def calculate_total(
-    receipt_id: UUID,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
+        receipt_id: UUID,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable
 ) -> dict[str, float]:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)
@@ -70,14 +71,14 @@ def calculate_total(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/quotes")
+@receipt_api.get("/receipts/quotes/{receipt_id}")
 @no_type_check
 def get_quote(
-    receipt_id: UUID,
-    request: QuoteRequest,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
+        receipt_id: UUID,
+        request: QuoteRequest,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable
 ) -> dict[str, Any]:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)
@@ -86,19 +87,19 @@ def get_quote(
             "subtotal": quote.subtotal,
             "total_discount": quote.total_discount,
             "total": quote.total,
-            "currency": quote.currency.value,
+            "currency": quote.currency.value
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/close")
+@receipt_api.post("/receipts/close/{receipt_id}")
 @no_type_check
 def close_receipt(
-    receipt_id: UUID,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
+        receipt_id: UUID,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable
 ) -> None:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)
@@ -110,58 +111,50 @@ def close_receipt(
 @receipt_api.get("/receipts/{receipt_id}")
 @no_type_check
 def get_receipt(
-    receipt_id: UUID,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
-    currency: Currency = Currency.GEL,
-) -> dict[str, Any]:
+        receipt_id: UUID,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable,
+        products: ProductRepositoryDependable,
+        currency: Currency = Currency.GEL
+) -> GetReceiptResponse:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)
         receipt = service.get_receipt(receipt_id, currency)
         items = service.get_receipt_items(receipt_id, currency)
 
-        payment_info = {}
-        if receipt.payment_amount and receipt.payment_currency:
-            payment_info = {
-                "payment_amount": receipt.payment_amount,
-                "payment_currency": receipt.payment_currency.value,
-            }
+        receipt_items = []
+        for item in items:
+            cur_product = products.read(item.product_id)
+            receipt_items.append(ReceiptProduct(
+                id=cur_product.id,
+                name=cur_product.name,
+                price=cur_product.price,
+                quantity=item.quantity
+            ))
 
-        return {
-            "receipt": {
-                "id": receipt.id,
-                "state": receipt.state,
-                "items": [
-                    {
-                        "name": item.product_name,
-                        "quantity": item.quantity,
-                        "unit_price": item.unit_price,
-                        "total": item.total,
-                        "discount": item.discount,
-                    }
-                    for item in items
-                ],
-                "subtotal": receipt.subtotal,
-                "total_discount": receipt.total_discount,
-                "total": receipt.total,
-                "savings": receipt.savings,
-                "currency": currency.value,
-                **payment_info,
-            }
-        }
+        return GetReceiptResponse(
+            id=receipt.id,
+            state=receipt.state.value,
+            subtotal=receipt.subtotal,
+            total_discount=receipt.total_discount,
+            total=receipt.total,
+            savings=receipt.savings,
+            currency=receipt.payment_currency,
+            items=receipt_items
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/payments")
+@receipt_api.post("/receipts/pay/{receipt_id}")
 @no_type_check
 def process_payment(
-    receipt_id: UUID,
-    payment: PaymentRequest,
-    receipts: ReceiptRepositoryDependable,
-    receipt_items: ReceiptItemRepositoryDependable,
-    currency_service: CurrencyServiceDependable,
+        receipt_id: UUID,
+        payment: PaymentRequest,
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable
 ) -> None:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)

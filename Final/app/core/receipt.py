@@ -9,19 +9,21 @@ from pydantic import BaseModel
 from app.core.currency import Currency, CurrencyService
 from app.core.product import Product
 from app.core.receipt_item import AddItemRequest, ReceiptItem, ReceiptItemRepository
+from app.core.shift import ShiftService
 
 
 class ReceiptState(str, Enum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
+    PAYED = "PAYED"
 
 
 @dataclass
 class Receipt:
     shift_id: UUID
     state: ReceiptState = ReceiptState.OPEN
-    created_at: datetime = field(default_factory=datetime.now)
     id: UUID = field(default_factory=uuid4)
+    created_at: datetime = field(default_factory=datetime.now)
     subtotal: float = 0.0
     total_discount: float = 0.0
     payment_amount: float = 0.0
@@ -52,6 +54,24 @@ class QuoteResponse(BaseModel):
     currency: Currency
 
 
+class ReceiptProduct(BaseModel):
+    id: UUID
+    name: str
+    price: float
+    quantity: int
+
+
+class GetReceiptResponse(BaseModel):
+    id: UUID
+    state: ReceiptState
+    items: List[ReceiptProduct]
+    subtotal: float
+    total_discount: float
+    total: float
+    savings: float
+    currency: Currency
+
+
 class ReceiptRepository(Protocol):
     def create(self, receipt: Receipt) -> Receipt:
         pass
@@ -65,21 +85,30 @@ class ReceiptRepository(Protocol):
     def read_by_shift(self, shift_id: UUID) -> List[Receipt]:
         pass
 
+    def get_all(self) -> List[Receipt]:
+        pass
+
 
 @dataclass
 class ReceiptService:
     receipts: ReceiptRepository
     receipt_items: ReceiptItemRepository
+    shift_service: ShiftService
     currency_service: CurrencyService
 
     def create(self) -> UUID:
-        receipt = Receipt(shift_id=uuid4())
+        shift_id = self.shift_service.get_open_shift()
+        if not shift_id:
+            raise ValueError(f"Shift is not open")
+        receipt = Receipt(id=uuid4(),
+                          shift_id=shift_id.shift_id)
         self.receipts.create(receipt)
         return receipt.id
 
-    def add_item(
-        self, receipt_id: UUID, add_request: AddItemRequest, product: Product
-    ) -> None:
+    def add_item(self,
+                 receipt_id: UUID,
+                 add_request: AddItemRequest,
+                 product: Product) -> None:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -89,14 +118,18 @@ class ReceiptService:
 
         item = ReceiptItem(
             product_id=add_request.product_id,
-            product_name=product.name,
             quantity=add_request.quantity,
-            unit_price=product.price,
-            receipt_id=receipt_id,
+            receipt_id=receipt_id
         )
 
+        current_item = self.receipt_items.read(receipt_id, add_request.product_id)
+        if current_item:
+            item.quantity += current_item.quantity
+            self.receipt_items.update(item)
+            return None
+
         self.receipt_items.create(item)
-        receipt.subtotal += item.total
+        # todo Zuka price update stuff
         self.receipts.update(receipt)
 
     def calculate_total(self, receipt_id: UUID) -> float:
@@ -105,10 +138,10 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.OPEN:
-            raise ValueError(
-                f"Cannot calculate total for receipt in {receipt.state} state"
-            )
+            raise ValueError(f"Cannot calculate total for "
+                             f"receipt in {receipt.state} state")
 
+        # todo Zuka price update stuff
         self.receipts.update(receipt)
 
         return receipt.total
@@ -118,10 +151,11 @@ class ReceiptService:
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
-        if receipt.state != ReceiptState.CLOSED:
-            raise ValueError("Cannot close receipt that is not in CLOSED state")
+        if receipt.state != ReceiptState.PAYED:
+            raise ValueError(f"Cannot close receipt that is not in {receipt.state} state")
 
-        pass
+        receipt.state = ReceiptState.CLOSED
+        self.receipts.update(receipt)
 
     def get_quote(self, receipt_id: UUID, currency: Currency) -> QuoteResponse:
         receipt = self.receipts.read(receipt_id)
@@ -136,12 +170,12 @@ class ReceiptService:
             subtotal=subtotal_converted,
             total_discount=discount_converted,
             total=total_converted,
-            currency=currency,
+            currency=currency
         )
 
-    def get_receipt(
-        self, receipt_id: UUID, currency: Currency = Currency.GEL
-    ) -> Receipt:
+    def get_receipt(self,
+                    receipt_id: UUID,
+                    currency: Currency = Currency.GEL) -> Receipt:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -155,39 +189,36 @@ class ReceiptService:
                 subtotal=self._convert_currency(receipt.subtotal, currency),
                 total_discount=self._convert_currency(receipt.total_discount, currency),
                 payment_amount=receipt.payment_amount,
-                payment_currency=receipt.payment_currency,
+                payment_currency=receipt.payment_currency
             )
 
             if receipt.payment_currency and receipt.payment_currency != currency:
                 converted_receipt.payment_amount = self.currency_service.convert(
-                    receipt.payment_amount, receipt.payment_currency, currency
+                    receipt.payment_amount,
+                    receipt.payment_currency,
+                    currency
                 )
                 converted_receipt.payment_currency = currency
 
             return converted_receipt
-
         return receipt
 
-    def get_receipt_items(
-        self, receipt_id: UUID, currency: Currency = Currency.GEL
-    ) -> List[ReceiptItem]:
+    def get_receipt_items(self,
+                          receipt_id: UUID,
+                          currency: Currency = Currency.GEL) -> List[ReceiptItem]:
         items = self.receipt_items.read_by_receipt(receipt_id)
-
         if currency != Currency.GEL:
             converted_items = []
             for item in items:
                 converted_item = ReceiptItem(
-                    id=item.id,
                     receipt_id=item.receipt_id,
                     product_id=item.product_id,
-                    product_name=item.product_name,
                     quantity=item.quantity,
-                    unit_price=self._convert_currency(item.unit_price, currency),
-                    discount=self._convert_currency(item.discount, currency),
                 )
                 converted_items.append(converted_item)
             return converted_items
 
+        # todo
         return items
 
     def process_payment(self, receipt_id: UUID, payment: PaymentRequest) -> None:
@@ -200,7 +231,7 @@ class ReceiptService:
         if payment_in_gel != receipt.total:
             raise ValueError("Payment amount is not correct")
 
-        receipt.state = ReceiptState.CLOSED
+        receipt.state = ReceiptState.PAYED
         receipt.payment_amount = payment.amount
         receipt.payment_currency = payment.currency
         self.receipts.update(receipt)

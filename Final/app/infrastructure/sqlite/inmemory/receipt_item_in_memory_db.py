@@ -24,10 +24,3 @@ class InMemoryReceiptItemDb(ReceiptItemRepository):
             for item in self.receipt_items.values()
             if item.receipt_id == receipt_id
         ]
-
-    def delete_by_receipt(self, receipt_id: UUID) -> None:
-        self.receipt_items = {
-            key: item
-            for key, item in self.receipt_items.items()
-            if item.receipt_id != receipt_id
-        }
