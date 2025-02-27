@@ -8,7 +8,7 @@ from app.core.product import ProductService
 from app.core.receipt import (
     PaymentRequest,
     QuoteRequest,
-    ReceiptService,
+    ReceiptService, GetReceiptResponse, ReceiptProduct,
 )
 from app.core.receipt_item import AddItemRequest
 from app.infrastructure.fastapi.dependables import (
@@ -54,7 +54,7 @@ def add_item(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/calculate")
+@receipt_api.get("/receipts/{receipt_id}/calculate")
 @no_type_check
 def calculate_total(
         receipt_id: UUID,
@@ -70,7 +70,7 @@ def calculate_total(
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
 
 
-@receipt_api.post("/receipts/{receipt_id}/quotes")
+@receipt_api.get("/receipts/{receipt_id}/quotes")
 @no_type_check
 def get_quote(
         receipt_id: UUID,
@@ -114,42 +114,34 @@ def get_receipt(
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
         currency_service: CurrencyServiceDependable,
+        products: ProductRepositoryDependable,
         currency: Currency = Currency.GEL
-) -> dict[str, Any]:
+) -> GetReceiptResponse:
     try:
         service = ReceiptService(receipts, receipt_items, currency_service)
         receipt = service.get_receipt(receipt_id, currency)
         items = service.get_receipt_items(receipt_id, currency)
 
-        payment_info = {}
-        if receipt.payment_amount and receipt.payment_currency:
-            payment_info = {
-                "payment_amount": receipt.payment_amount,
-                "payment_currency": receipt.payment_currency.value
-            }
+        receipt_items = []
+        for item in items:
+            cur_product = products.read(item.product_id)
+            receipt_items.append(ReceiptProduct(
+                id=cur_product.id,
+                name=cur_product.name,
+                price=cur_product.price,
+                quantity=item.quantity
+            ))
 
-        return {
-            "receipt": {
-                "id": receipt.id,
-                "state": receipt.state,
-                "items": [
-                    {
-                        "name": item.product_name,
-                        "quantity": item.quantity,
-                        "unit_price": item.unit_price,
-                        "total": item.total,
-                        "discount": item.discount
-                    }
-                    for item in items
-                ],
-                "subtotal": receipt.subtotal,
-                "total_discount": receipt.total_discount,
-                "total": receipt.total,
-                "savings": receipt.savings,
-                "currency": currency.value,
-                **payment_info
-            }
-        }
+        return GetReceiptResponse(
+            id=receipt.id,
+            state=receipt.state.value,
+            subtotal=receipt.subtotal,
+            total_discount=receipt.total_discount,
+            total=receipt.total,
+            savings=receipt.savings,
+            currency=receipt.payment_currency,
+            items=receipt_items
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail={"error": {"message": str(e)}})
 
