@@ -7,7 +7,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from app.core.product import Product
-from app.infrastructure.sqlite.producs_in_memory_db import InMemoryProductDb
+from app.infrastructure.sqlite.inmemory.producs_in_memory_db import InMemoryProductDb
 from app.runner.setup import init_app
 
 
