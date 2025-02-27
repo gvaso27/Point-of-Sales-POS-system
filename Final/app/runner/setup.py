@@ -7,6 +7,7 @@ from app.infrastructure.fastapi.product import product_api
 from app.infrastructure.fastapi.receipt import receipt_api
 from app.infrastructure.fastapi.shift import shift_api
 from app.infrastructure.sqlite.campaign_db import CampaignDb
+from app.infrastructure.sqlite.inmemory.campaigns_in_memory_db import InMemoryCampaignDb
 from app.infrastructure.sqlite.inmemory.producs_in_memory_db import InMemoryProductDb
 from app.infrastructure.sqlite.inmemory.receipt_in_memory_db import InMemoryReceiptDb
 from app.infrastructure.sqlite.inmemory.receipt_item_in_memory_db import (
@@ -38,6 +39,7 @@ def init_app(db_type: str = "sqlite") -> FastAPI:
     else:
         app.state.product = InMemoryProductDb()
         app.state.receipt = InMemoryReceiptDb()
+        app.state.campaign = InMemoryCampaignDb()
         app.state.receipt_items = InMemoryReceiptItemDb()
         app.state.shift = InMemoryShiftDb()
 
