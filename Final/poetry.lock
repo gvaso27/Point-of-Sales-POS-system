@@ -34,13 +34,13 @@ trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "apexdevkit"
-version = "1.21.7"
+version = "1.21.8"
 description = "Apex Development Tools for python."
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "apexdevkit-1.21.7-py3-none-any.whl", hash = "sha256:23e870a5a731c74e96f0aae3125faf2051d7a76656a02e55f0dce67e50b81724"},
-    {file = "apexdevkit-1.21.7.tar.gz", hash = "sha256:86e784f72b363b634c83b0f5566246114448802a86d138edfeaa3950927b0d6c"},
+    {file = "apexdevkit-1.21.8-py3-none-any.whl", hash = "sha256:68a525363e8472a50fb1d9cfd1e1f820fe31de259d2fbe7e29dfe52254d43f69"},
+    {file = "apexdevkit-1.21.8.tar.gz", hash = "sha256:79928e0fbbb24b9d867c6e41d1cb2b8a188c27e070ee27b6530df457f2a68b34"},
 ]
 
 [package.dependencies]
@@ -295,13 +295,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "hypothesis"
-version = "6.126.0"
+version = "6.127.2"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "hypothesis-6.126.0-py3-none-any.whl", hash = "sha256:323c58a773482a2b4ba4e35202560cfcba45e8a8e09e7ffb83c0f9bac5b544da"},
-    {file = "hypothesis-6.126.0.tar.gz", hash = "sha256:648b6215ee0468fa85eaee9dceb5b7766a5861c20ee4801bd904a2c02f1a6c9b"},
+    {file = "hypothesis-6.127.2-py3-none-any.whl", hash = "sha256:9b1b5e4e8adc82d01351d4e814ebdd38e2f3173f489de098b418c7a026f100c0"},
+    {file = "hypothesis-6.127.2.tar.gz", hash = "sha256:725343a65846c3627399398a6206adca3e1433786fdcfaa16ca0d114900849a5"},
 ]
 
 [package.dependencies]
