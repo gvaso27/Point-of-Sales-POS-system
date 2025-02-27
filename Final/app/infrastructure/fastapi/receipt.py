@@ -51,11 +51,13 @@ def add_item(
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
         currency_service: CurrencyServiceDependable,
-        products: ProductRepositoryDependable
+        products: ProductRepositoryDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
         product = ProductService(products).read(request.product_id)
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.add_item(receipt_id, request, product)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -67,10 +69,12 @@ def calculate_total(
         receipt_id: UUID,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, float]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         total = service.calculate_total(receipt_id)
         return {"total": total}
     except ValueError as e:
@@ -84,10 +88,12 @@ def get_quote(
         request: QuoteRequest,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         quote = service.get_quote(receipt_id, request.currency)
         return {
             "subtotal": quote.subtotal,
@@ -105,10 +111,12 @@ def close_receipt(
         receipt_id: UUID,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.close_receipt(receipt_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -122,10 +130,12 @@ def get_receipt(
         receipt_items: ReceiptItemRepositoryDependable,
         currency_service: CurrencyServiceDependable,
         products: ProductRepositoryDependable,
+        shift_service: ShiftServiceDependable,
         currency: Currency = Currency.GEL
 ) -> GetReceiptResponse:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         receipt = service.get_receipt(receipt_id, currency)
         items = service.get_receipt_items(receipt_id, currency)
 
@@ -160,10 +170,12 @@ def process_payment(
         payment: PaymentRequest,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.process_payment(receipt_id, payment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})

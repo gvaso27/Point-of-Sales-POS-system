@@ -6,21 +6,37 @@ from app.core.receipt_item import ReceiptItem, ReceiptItemRepository
 
 class InMemoryReceiptItemDb(ReceiptItemRepository):
     def __init__(self) -> None:
-        self.receipt_items: Dict[str, ReceiptItem] = {}
+        self.receipt_items: Dict[str, List[ReceiptItem]] = {}
 
     def up(self) -> None:
         pass
 
     def create(self, item: ReceiptItem) -> ReceiptItem:
-        self.receipt_items[str(item.receipt_id)] = item
+        key = str(item.receipt_id)
+        if key not in self.receipt_items:
+            self.receipt_items[key] = []
+        self.receipt_items[key].append(item)
         return item
 
-    def read(self, item_id: UUID, **kwargs) -> ReceiptItem | None:
-        return self.receipt_items.get(str(item_id))
+    def update(self, item: ReceiptItem) -> None:
+        key = str(item.receipt_id)
+        if key in self.receipt_items:
+            # Find and replace item with matching product_id
+            for i, existing_item in enumerate(self.receipt_items[key]):
+                if existing_item.product_id == item.product_id:
+                    self.receipt_items[key][i] = item
+                    break
+
+    def read(self, receipt_id: UUID, product_id: UUID) -> ReceiptItem | None:
+        key = str(receipt_id)
+        if key not in self.receipt_items:
+            return None
+
+        for item in self.receipt_items[key]:
+            if item.product_id == product_id:
+                return item
+        return None
 
     def read_by_receipt(self, receipt_id: UUID) -> List[ReceiptItem]:
-        return [
-            item
-            for item in self.receipt_items.values()
-            if item.receipt_id == receipt_id
-        ]
+        key = str(receipt_id)
+        return self.receipt_items.get(key, [])
