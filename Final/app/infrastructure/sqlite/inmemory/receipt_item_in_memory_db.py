@@ -20,6 +20,7 @@ class InMemoryReceiptItemDb(ReceiptItemRepository):
 
     def read_by_receipt(self, receipt_id: UUID) -> List[ReceiptItem]:
         return [
-            item for item in self.receipt_items.values()
+            item
+            for item in self.receipt_items.values()
             if item.receipt_id == receipt_id
         ]
