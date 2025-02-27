@@ -3,7 +3,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.campaign import CampaignService, CreateCampaignRequest
+from app.core.Models.campaign import CreateCampaignRequest
+from app.core.campaign import CampaignService
 from app.infrastructure.fastapi.dependables import CampaignRepositoryDependable
 
 campaign_api: APIRouter = APIRouter()

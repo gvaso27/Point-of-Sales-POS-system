@@ -4,15 +4,14 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 
 from app.core.currency import Currency
-from app.core.product import ProductService
-from app.core.receipt import (
+from app.core.Models.receipt import (
+    AddItemRequest,
     GetReceiptResponse,
-    PaymentRequest,
     QuoteRequest,
-    ReceiptProduct,
-    ReceiptService,
+    ReceiptProduct, PaymentRequest,
 )
-from app.core.receipt_item import AddItemRequest
+from app.core.product import ProductService
+from app.core.receipt import ReceiptService
 from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.core.receipt import Receipt
+from app.core.Models.receipt import Receipt
 
 
 class ICampaign(ABC):

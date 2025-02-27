@@ -1,7 +1,7 @@
 from typing import Dict, List
 from uuid import UUID
 
-from app.core.product import Product
+from app.core.Models.product import Product
 
 
 class InMemoryProductDb:

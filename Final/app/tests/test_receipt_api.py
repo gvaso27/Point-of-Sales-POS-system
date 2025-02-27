@@ -6,8 +6,8 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
+from app.core.Models.receipt import ReceiptState
 from app.core.currency import Currency
-from app.core.receipt import ReceiptState
 from app.infrastructure.sqlite.inmemory.producs_in_memory_db import InMemoryProductDb
 from app.runner.setup import init_app
 
@@ -252,7 +252,8 @@ def test_incorrect_payment_amount(client: TestClient) -> None:
     assert response.status_code == 400
     assert "error" in response.json()["detail"]
     assert (
-            "Payment amount is not correct" in response.json()["detail"]["error"]["message"]
+            "Payment amount is not correct"
+            in response.json()["detail"]["error"]["message"]
     )
 
 

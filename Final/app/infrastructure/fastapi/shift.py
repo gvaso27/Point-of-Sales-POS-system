@@ -3,7 +3,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.report import ReportRevenue, ReportService, XReport
+from app.core.Models.report import ReportRevenue, XReport
+from app.core.report import ReportService
 from app.core.shift import ShiftService
 from app.infrastructure.fastapi.dependables import (
     ReceiptItemRepositoryDependable,

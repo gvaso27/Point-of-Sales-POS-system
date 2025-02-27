@@ -6,7 +6,8 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
-from app.core.product import CreateProductRequest, ProductService, UpdateProductRequest
+from app.core.Models.product import CreateProductRequest, UpdateProductRequest
+from app.core.product import ProductService
 from app.infrastructure.fastapi.dependables import ProductRepositoryDependable
 
 product_api: APIRouter = APIRouter()
