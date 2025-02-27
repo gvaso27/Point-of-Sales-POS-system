@@ -8,11 +8,11 @@ from app.core.product import ProductRepository
 
 
 def get_product_repository(request: Request) -> ProductRepository:
-    return request.app.state.product  # type: ignore
+    return request.app.state.product
 
 
 def get_campaign_repository(request: Request) -> CampaignRepository:
-    return request.app.state.campaign  # type: ignore
+    return request.app.state.campaign
 
 
 ProductRepositoryDependable = Annotated[
