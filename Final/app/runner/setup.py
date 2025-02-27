@@ -12,6 +12,7 @@ from app.infrastructure.sqlite.inmemory.receipt_in_memory_db import InMemoryRece
 from app.infrastructure.sqlite.inmemory.receipt_item_in_memory_db import (
     InMemoryReceiptItemDb,
 )
+from app.infrastructure.sqlite.inmemory.shift_in_memory_db import InMemoryShiftDb
 from app.infrastructure.sqlite.product_db import ProductDb
 from app.infrastructure.sqlite.receipt_db import ReceiptDb
 from app.infrastructure.sqlite.receipt_item_db import ReceiptItemDb
@@ -38,6 +39,7 @@ def init_app(db_type: str = "sqlite") -> FastAPI:
         app.state.product = InMemoryProductDb()
         app.state.receipt = InMemoryReceiptDb()
         app.state.receipt_items = InMemoryReceiptItemDb()
+        app.state.shift = InMemoryShiftDb()
 
     app.state.currency_service = CurrencyService()
     app.state.shift_service = ShiftService(app.state.shift)

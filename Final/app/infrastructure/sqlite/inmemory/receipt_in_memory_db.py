@@ -29,3 +29,6 @@ class InMemoryReceiptDb(ReceiptRepository):
             for receipt in self.receipts.values()
             if receipt.shift_id == shift_id
         ]
+
+    def get_all(self) -> List[Receipt]:
+        return list(self.receipts.values())

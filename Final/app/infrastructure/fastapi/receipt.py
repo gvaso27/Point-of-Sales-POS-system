@@ -18,7 +18,9 @@ from app.core.Models.receipt import (
     ReceiptProduct,
 )
 from app.core.product import ProductService
-from app.core.receipt import ReceiptService
+from app.core.receipt import (
+    ReceiptService,
+)
 from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,
@@ -39,9 +41,10 @@ def create_receipt(
         shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts,
+                                 receipt_items,
+                                 shift_service,
+                                 currency_service)
         receipt_id = service.create()
         return {"receipt_id": receipt_id}
     except ValueError as e:
@@ -61,9 +64,8 @@ def add_item(
 ) -> None:
     try:
         product = ProductService(products).read(request.product_id)
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.add_item(receipt_id, request, product)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -79,9 +81,8 @@ def calculate_total(
         shift_service: ShiftServiceDependable
 ) -> dict[str, float]:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         total = service.calculate_total(receipt_id)
         return {"total": total}
     except ValueError as e:
@@ -99,9 +100,8 @@ def get_quote(
         shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         quote = service.get_quote(receipt_id, request.currency)
         return {
             "subtotal": quote.subtotal,
@@ -123,9 +123,8 @@ def close_receipt(
         shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.close_receipt(receipt_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -140,12 +139,11 @@ def get_receipt(
         currency_service: CurrencyServiceDependable,
         products: ProductRepositoryDependable,
         shift_service: ShiftServiceDependable,
-    currency: Currency = Currency.GEL
+        currency: Currency = Currency.GEL
 ) -> GetReceiptResponse:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         receipt = service.get_receipt(receipt_id, currency)
         items = service.get_receipt_items(receipt_id, currency)
 
@@ -184,9 +182,8 @@ def process_payment(
         shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = create_receipt_service(
-            receipts, receipt_items, currency_service, shift_service
-        )
+        service = ReceiptService(receipts, receipt_items,
+                                 shift_service, currency_service)
         service.process_payment(receipt_id, payment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
