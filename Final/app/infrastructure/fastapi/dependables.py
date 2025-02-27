@@ -11,11 +11,11 @@ from app.core.receipt_item import ReceiptItemRepository
 
 
 def get_product_repository(request: Request) -> ProductRepository:
-    return request.app.state.product
+    return request.app.state.product  # type: ignore
 
 
 def get_campaign_repository(request: Request) -> CampaignRepository:
-    return request.app.state.campaign
+    return request.app.state.campaign  # type: ignore
 
 
 def get_receipt_repository(request: Request) -> ReceiptRepository:
@@ -30,9 +30,7 @@ def get_currency_service(request: Request) -> Any:
     return request.app.state.currency_service
 
 
-CurrencyServiceDependable = Annotated[
-    CurrencyService, Depends(get_currency_service)
-]
+CurrencyServiceDependable = Annotated[CurrencyService, Depends(get_currency_service)]
 
 ProductRepositoryDependable = Annotated[
     ProductRepository, Depends(get_product_repository)

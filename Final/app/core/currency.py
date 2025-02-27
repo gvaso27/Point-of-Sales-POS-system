@@ -21,9 +21,7 @@ class CurrencyService:
 
     def _update_rates(self) -> None:
         try:
-            response = requests.get(
-                "https://open.er-api.com/v6/latest/GEL"
-            )
+            response = requests.get("https://open.er-api.com/v6/latest/GEL")
             data = response.json()
 
             if data["result"] == "success":
@@ -37,11 +35,9 @@ class CurrencyService:
                 Currency.EUR.value: 0.34,
             }
 
-    def convert(self,
-                amount: float,
-                from_currency: Currency,
-                to_currency: Currency) -> float:
-
+    def convert(
+        self, amount: float, from_currency: Currency, to_currency: Currency
+    ) -> float:
         if from_currency == to_currency:
             return amount
         if not self._rates:

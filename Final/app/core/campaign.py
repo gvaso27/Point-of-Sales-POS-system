@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Protocol, Optional
+from typing import List, Optional, Protocol
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
+
 
 class CampaignType(Enum):
     BUY_N_GET_N = "buy_n_get_n"
@@ -48,6 +49,7 @@ class CampaignRepository(Protocol):
 
     def deactivate(self, campaign_id: UUID) -> None:
         pass
+
 
 @dataclass
 class CampaignService:

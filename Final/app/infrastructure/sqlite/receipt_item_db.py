@@ -37,10 +37,14 @@ class ReceiptItemDb(ReceiptItemRepository):
                 ) VALUES (?, ?, ?, ?, ?, ?,?)
                 """,
                 (
-                    str(item.id), str(item.receipt_id),
-                    str(item.product_id), item.product_name, item.quantity,
-                    item.unit_price, item.discount
-                )
+                    str(item.id),
+                    str(item.receipt_id),
+                    str(item.product_id),
+                    item.product_name,
+                    item.quantity,
+                    item.unit_price,
+                    item.discount,
+                ),
             )
             connection.commit()
             return item
@@ -48,10 +52,7 @@ class ReceiptItemDb(ReceiptItemRepository):
     def read(self, item_id: UUID) -> ReceiptItem | None:
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute(
-                "SELECT * FROM receipt_items WHERE id = ?",
-                (str(item_id),)
-            )
+            cursor.execute("SELECT * FROM receipt_items WHERE id = ?", (str(item_id),))
             row = cursor.fetchone()
             if row:
                 return ReceiptItem(
@@ -61,7 +62,7 @@ class ReceiptItemDb(ReceiptItemRepository):
                     product_name=row[3],
                     quantity=row[4],
                     unit_price=row[5],
-                    discount=row[6]
+                    discount=row[6],
                 )
             return None
 
@@ -69,8 +70,7 @@ class ReceiptItemDb(ReceiptItemRepository):
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM receipt_items WHERE receipt_id = ?",
-                (str(receipt_id),)
+                "SELECT * FROM receipt_items WHERE receipt_id = ?", (str(receipt_id),)
             )
             rows = cursor.fetchall()
             print(rows)
@@ -82,7 +82,7 @@ class ReceiptItemDb(ReceiptItemRepository):
                     product_name=row[3],
                     quantity=row[4],
                     unit_price=row[5],
-                    discount=row[6]
+                    discount=row[6],
                 )
                 for row in rows
             ]
@@ -91,7 +91,6 @@ class ReceiptItemDb(ReceiptItemRepository):
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "DELETE FROM receipt_items WHERE receipt_id = ?",
-                (str(receipt_id),)
+                "DELETE FROM receipt_items WHERE receipt_id = ?", (str(receipt_id),)
             )
             connection.commit()

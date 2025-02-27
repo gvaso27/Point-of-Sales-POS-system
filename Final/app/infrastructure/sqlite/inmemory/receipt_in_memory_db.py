@@ -25,6 +25,7 @@ class InMemoryReceiptDb(ReceiptRepository):
 
     def read_by_shift(self, shift_id: UUID) -> List[Receipt]:
         return [
-            receipt for receipt in self.receipts.values()
+            receipt
+            for receipt in self.receipts.values()
             if receipt.shift_id == shift_id
         ]

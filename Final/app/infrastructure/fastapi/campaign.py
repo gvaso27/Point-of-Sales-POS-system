@@ -1,12 +1,13 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 
 from app.core.campaign import CampaignService, CreateCampaignRequest
 from app.infrastructure.fastapi.dependables import CampaignRepositoryDependable
 
 campaign_api: APIRouter = APIRouter()
+
 
 @campaign_api.post("/campaigns", status_code=201, response_model=dict[str, Any])
 async def create_campaign(
@@ -20,9 +21,7 @@ async def create_campaign(
 
 
 @campaign_api.get("/campaigns", response_model=dict[str, Any])
-async def list_campaigns(
-    campaigns: CampaignRepositoryDependable
-) -> dict[str, Any]:
+async def list_campaigns(campaigns: CampaignRepositoryDependable) -> dict[str, Any]:
     return {"campaigns": CampaignService(campaigns).read_all()}
 
 

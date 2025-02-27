@@ -20,27 +20,22 @@ class ReceiptFake:
         return {
             "id": str(uuid4()),
             "name": self.faker.word(),
-            "price": self.faker.random_number(digits=3)
+            "price": self.faker.random_number(digits=3),
         }
 
     def add_item_request(self, product_id: UUID) -> Dict[str, Any]:
         return {
             "product_id": str(product_id),
-            "quantity": self.faker.random_int(min=1, max=10)
+            "quantity": self.faker.random_int(min=1, max=10),
         }
 
     def quote_request(self, currency: Currency = Currency.USD) -> Dict[str, Any]:
-        return {
-            "currency": currency.value
-        }
+        return {"currency": currency.value}
 
-    def payment_request(self,
-                        amount: float,
-                        currency: Currency = Currency.GEL) -> Dict[str, Any]:
-        return {
-            "amount": amount,
-            "currency": currency.value
-        }
+    def payment_request(
+        self, amount: float, currency: Currency = Currency.GEL
+    ) -> Dict[str, Any]:
+        return {"amount": amount, "currency": currency.value}
 
 
 @pytest.fixture
@@ -89,8 +84,10 @@ def test_add_item_to_receipt(client: TestClient) -> None:
     response = client.get(f"/receipts/{receipt_id}")
     assert response.status_code == 200
     assert len(response.json()["receipt"]["items"]) == 1
-    assert (response.json()["receipt"]["items"][0]["quantity"]
-            == add_item_request["quantity"])
+    assert (
+        response.json()["receipt"]["items"][0]["quantity"]
+        == add_item_request["quantity"]
+    )
 
 
 def test_calculate_total(client: TestClient) -> None:
@@ -202,8 +199,10 @@ def test_get_nonexistent_receipt(client: TestClient) -> None:
     assert response.status_code == 404
     assert "detail" in response.json()
     assert "error" in response.json()["detail"]
-    assert (f"Receipt with id '{unknown_id}' does not exist"
-            in response.json()["detail"]["error"]["message"])
+    assert (
+        f"Receipt with id '{unknown_id}' does not exist"
+        in response.json()["detail"]["error"]["message"]
+    )
 
 
 def test_add_item_to_closed_receipt(client: TestClient) -> None:
@@ -227,8 +226,10 @@ def test_add_item_to_closed_receipt(client: TestClient) -> None:
     assert response.status_code == 400
     assert "detail" in response.json()
     assert "error" in response.json()["detail"]
-    assert ("Cannot add items to receipt in ReceiptState.CLOSED state"
-            in response.json()["detail"]["error"]["message"])
+    assert (
+        "Cannot add items to receipt in ReceiptState.CLOSED state"
+        in response.json()["detail"]["error"]["message"]
+    )
 
 
 def test_incorrect_payment_amount(client: TestClient) -> None:
@@ -251,5 +252,6 @@ def test_incorrect_payment_amount(client: TestClient) -> None:
     assert response.status_code == 400
     assert "detail" in response.json()
     assert "error" in response.json()["detail"]
-    assert ("Payment amount is not correct" in
-            response.json()["detail"]["error"]["message"])
+    assert (
+        "Payment amount is not correct" in response.json()["detail"]["error"]["message"]
+    )

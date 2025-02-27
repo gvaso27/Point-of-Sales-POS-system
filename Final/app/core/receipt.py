@@ -78,10 +78,9 @@ class ReceiptService:
         self.receipts.create(receipt)
         return receipt.id
 
-    def add_item(self,
-                 receipt_id: UUID,
-                 add_request: AddItemRequest,
-                 product: Product) -> None:
+    def add_item(
+        self, receipt_id: UUID, add_request: AddItemRequest, product: Product
+    ) -> None:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -94,7 +93,7 @@ class ReceiptService:
             product_name=product.name,
             quantity=add_request.quantity,
             unit_price=product.price,
-            receipt_id=receipt_id
+            receipt_id=receipt_id,
         )
 
         self.receipt_items.create(item)
@@ -107,8 +106,9 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.OPEN:
-            raise ValueError(f"Cannot calculate total for "
-                             f"receipt in {receipt.state} state")
+            raise ValueError(
+                f"Cannot calculate total for receipt in {receipt.state} state"
+            )
 
         self.receipts.update(receipt)
 
@@ -137,12 +137,12 @@ class ReceiptService:
             subtotal=subtotal_converted,
             total_discount=discount_converted,
             total=total_converted,
-            currency=currency
+            currency=currency,
         )
 
-    def get_receipt(self,
-                    receipt_id: UUID,
-                    currency: Currency = Currency.GEL) -> Receipt:
+    def get_receipt(
+        self, receipt_id: UUID, currency: Currency = Currency.GEL
+    ) -> Receipt:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -156,14 +156,12 @@ class ReceiptService:
                 subtotal=self._convert_currency(receipt.subtotal, currency),
                 total_discount=self._convert_currency(receipt.total_discount, currency),
                 payment_amount=receipt.payment_amount,
-                payment_currency=receipt.payment_currency
+                payment_currency=receipt.payment_currency,
             )
 
             if receipt.payment_currency and receipt.payment_currency != currency:
                 converted_receipt.payment_amount = self.currency_service.convert(
-                    receipt.payment_amount,
-                    receipt.payment_currency,
-                    currency
+                    receipt.payment_amount, receipt.payment_currency, currency
                 )
                 converted_receipt.payment_currency = currency
 
@@ -171,9 +169,9 @@ class ReceiptService:
 
         return receipt
 
-    def get_receipt_items(self,
-                          receipt_id: UUID,
-                          currency: Currency = Currency.GEL) -> List[ReceiptItem]:
+    def get_receipt_items(
+        self, receipt_id: UUID, currency: Currency = Currency.GEL
+    ) -> List[ReceiptItem]:
         items = self.receipt_items.read_by_receipt(receipt_id)
 
         if currency != Currency.GEL:
@@ -186,7 +184,7 @@ class ReceiptService:
                     product_name=item.product_name,
                     quantity=item.quantity,
                     unit_price=self._convert_currency(item.unit_price, currency),
-                    discount=self._convert_currency(item.discount, currency)
+                    discount=self._convert_currency(item.discount, currency),
                 )
                 converted_items.append(converted_item)
             return converted_items

@@ -1,5 +1,5 @@
 import sqlite3
-from typing import List, Set
+from typing import List, Optional
 from uuid import UUID
 
 from app.core.campaign import Campaign, CampaignType
@@ -56,7 +56,8 @@ class CampaignDb:
 
     def read(self, campaign_id: UUID) -> Campaign:
         select_query = """
-            SELECT type, amount_to_exceed, percentage, is_active, amount, gift_amount, gift_product_type 
+            SELECT type, amount_to_exceed, percentage, is_active, 
+            amount, gift_amount, gift_product_type 
             FROM campaigns 
             WHERE id = ?;
         """
@@ -74,7 +75,7 @@ class CampaignDb:
                     amount=row[4],
                     gift_amount=row[5],
                     gift_product_type=row[6],
-                    id=campaign_id
+                    id=campaign_id,
                 )
 
                 product_ids = self.get_campaign_product_ids(campaign_id)
@@ -86,7 +87,8 @@ class CampaignDb:
 
     def add(self, campaign: Campaign) -> Campaign:
         insert_query = """
-            INSERT INTO campaigns (id, type, amount_to_exceed, percentage, is_active, amount, gift_amount, gift_product_type)
+            INSERT INTO campaigns (id, type, amount_to_exceed, percentage, is_active, 
+            amount, gift_amount, gift_product_type)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
         with sqlite3.connect(self.db_path) as connection:
@@ -101,11 +103,11 @@ class CampaignDb:
                     int(campaign.is_active),
                     campaign.amount,
                     campaign.gift_amount,
-                    campaign.gift_product_type
+                    campaign.gift_product_type,
                 ),
             )
 
-            if hasattr(campaign, 'product_ids') and campaign.product_ids:
+            if hasattr(campaign, "product_ids") and campaign.product_ids:
                 self.add_campaign_product_ids(campaign.id, campaign.product_ids, cursor)
 
             connection.commit()
@@ -113,7 +115,8 @@ class CampaignDb:
 
     def read_all(self) -> List[Campaign]:
         select_query = """
-            SELECT id, type, amount_to_exceed, percentage, is_active, amount, gift_amount, gift_product_type 
+            SELECT id, type, amount_to_exceed, percentage, is_active, 
+            amount, gift_amount, gift_product_type 
             FROM campaigns;
         """
         with sqlite3.connect(self.db_path) as connection:
@@ -132,7 +135,7 @@ class CampaignDb:
                     is_active=bool(row[4]),
                     amount=row[5],
                     gift_amount=row[6],
-                    gift_product_type=row[7]
+                    gift_product_type=row[7],
                 )
 
                 product_ids = self.get_campaign_product_ids(campaign_id)
@@ -155,7 +158,12 @@ class CampaignDb:
                 raise Exception(f"campaign with {campaign_id} does not exist")
             connection.commit()
 
-    def add_campaign_product_ids(self, campaign_id: UUID, product_ids: List[str], cursor=None) -> None:
+    def add_campaign_product_ids(
+        self,
+        campaign_id: UUID,
+        product_ids: List[str],
+        cursor: Optional[sqlite3.Cursor] = None,
+    ) -> None:
         insert_query = """
             INSERT INTO campaign_relations (campaign_id, product_id)
             VALUES (?, ?);
@@ -166,6 +174,7 @@ class CampaignDb:
             connection = sqlite3.connect(self.db_path)
             c = connection.cursor()
         else:
+            assert cursor is not None
             c = cursor
 
         try:
