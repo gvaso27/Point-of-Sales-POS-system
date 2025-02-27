@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel
 
+from app.core.campaign_observers import ICampaign
 from app.core.currency import Currency, CurrencyService
 from app.core.product import Product
 from app.core.receipt_item import AddItemRequest, ReceiptItem, ReceiptItemRepository
