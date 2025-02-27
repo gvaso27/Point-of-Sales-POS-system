@@ -2,7 +2,7 @@ import sqlite3
 from typing import List, Optional
 from uuid import UUID
 
-from app.core.Models.campaign import CampaignType, Campaign
+from app.core.Models.campaign import Campaign, CampaignType
 
 
 class CampaignDb:

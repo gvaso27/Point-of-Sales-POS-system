@@ -2,8 +2,8 @@ import sqlite3
 from typing import List
 from uuid import UUID
 
-from app.core.Models.receipt import Receipt, ReceiptState
 from app.core.currency import Currency
+from app.core.Models.receipt import Receipt, ReceiptState
 from app.core.receipt import ReceiptRepository
 
 

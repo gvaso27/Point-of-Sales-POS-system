@@ -3,12 +3,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
+from app.core.campaign_observers import (
+    BuyNGetNCampaign,
+    ComboCampaign,
+    DiscountCampaign,
+    WholeReceiptDiscountCampaign,
+)
 from app.core.currency import Currency
 from app.core.Models.receipt import (
     AddItemRequest,
     GetReceiptResponse,
+    PaymentRequest,
     QuoteRequest,
-    ReceiptProduct, PaymentRequest,
+    ReceiptProduct,
 )
 from app.core.product import ProductService
 from app.core.receipt import ReceiptService
@@ -32,10 +39,9 @@ def create_receipt(
         shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts,
-                                 receipt_items,
-                                 shift_service,
-                                 currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         receipt_id = service.create()
         return {"receipt_id": receipt_id}
     except ValueError as e:
@@ -50,11 +56,14 @@ def add_item(
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
         currency_service: CurrencyServiceDependable,
-        products: ProductRepositoryDependable
+        products: ProductRepositoryDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
         product = ProductService(products).read(request.product_id)
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         service.add_item(receipt_id, request, product)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -66,10 +75,13 @@ def calculate_total(
         receipt_id: UUID,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, float]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         total = service.calculate_total(receipt_id)
         return {"total": total}
     except ValueError as e:
@@ -83,10 +95,13 @@ def get_quote(
         request: QuoteRequest,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         quote = service.get_quote(receipt_id, request.currency)
         return {
             "subtotal": quote.subtotal,
@@ -104,10 +119,13 @@ def close_receipt(
         receipt_id: UUID,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         service.close_receipt(receipt_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
@@ -121,10 +139,13 @@ def get_receipt(
         receipt_items: ReceiptItemRepositoryDependable,
         currency_service: CurrencyServiceDependable,
         products: ProductRepositoryDependable,
-        currency: Currency = Currency.GEL
+        shift_service: ShiftServiceDependable,
+    currency: Currency = Currency.GEL
 ) -> GetReceiptResponse:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         receipt = service.get_receipt(receipt_id, currency)
         items = service.get_receipt_items(receipt_id, currency)
 
@@ -159,10 +180,30 @@ def process_payment(
         payment: PaymentRequest,
         receipts: ReceiptRepositoryDependable,
         receipt_items: ReceiptItemRepositoryDependable,
-        currency_service: CurrencyServiceDependable
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
 ) -> None:
     try:
-        service = ReceiptService(receipts, receipt_items, currency_service)
+        service = create_receipt_service(
+            receipts, receipt_items, currency_service, shift_service
+        )
         service.process_payment(receipt_id, payment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
+
+
+def create_receipt_service(
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
+) -> ReceiptService:
+    service = ReceiptService(receipts, receipt_items, shift_service, currency_service)
+
+    # Register observers
+    service.add_observer(BuyNGetNCampaign())
+    service.add_observer(DiscountCampaign())
+    service.add_observer(ComboCampaign())
+    service.add_observer(WholeReceiptDiscountCampaign())
+
+    return service
