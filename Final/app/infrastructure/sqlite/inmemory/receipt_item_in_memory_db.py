@@ -1,7 +1,8 @@
 from typing import Dict, List
 from uuid import UUID
 
-from app.core.receipt_item import ReceiptItem, ReceiptItemRepository
+from app.core.Models.receipt import ReceiptItem
+from app.core.receipt_item import ReceiptItemRepository
 
 
 class InMemoryReceiptItemDb(ReceiptItemRepository):

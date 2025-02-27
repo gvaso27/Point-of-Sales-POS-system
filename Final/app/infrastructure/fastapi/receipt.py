@@ -3,6 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
+from app.core.campaign_observers import (
+    BuyNGetNCampaign,
+    ComboCampaign,
+    DiscountCampaign,
+    WholeReceiptDiscountCampaign,
+)
 from app.core.currency import Currency
 from app.core.product import ProductService
 from app.core.receipt import (
@@ -179,3 +185,20 @@ def process_payment(
         service.process_payment(receipt_id, payment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail={"error": {"message": str(e)}})
+
+
+def create_receipt_service(
+        receipts: ReceiptRepositoryDependable,
+        receipt_items: ReceiptItemRepositoryDependable,
+        currency_service: CurrencyServiceDependable,
+        shift_service: ShiftServiceDependable
+) -> ReceiptService:
+    service = ReceiptService(receipts, receipt_items, shift_service, currency_service)
+
+    # Register observers
+    service.add_observer(BuyNGetNCampaign())
+    service.add_observer(DiscountCampaign())
+    service.add_observer(ComboCampaign())
+    service.add_observer(WholeReceiptDiscountCampaign())
+
+    return service

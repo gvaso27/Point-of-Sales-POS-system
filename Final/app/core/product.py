@@ -1,25 +1,8 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Protocol
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel
-
-
-@dataclass
-class Product:
-    name: str
-    price: float
-    id: UUID = field(default_factory=uuid4)
-
-
-class CreateProductRequest(BaseModel):
-    name: str
-    price: float
-
-
-class UpdateProductRequest(BaseModel):
-    name: str
-    price: float
+from app.core.Models.product import CreateProductRequest, Product, UpdateProductRequest
 
 
 class ProductRepository(Protocol):

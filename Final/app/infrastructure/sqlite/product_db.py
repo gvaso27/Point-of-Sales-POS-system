@@ -2,7 +2,7 @@ import sqlite3
 from typing import List
 from uuid import UUID
 
-from app.core.product import Product
+from app.core.Models.product import Product
 
 
 class ProductDb(object):

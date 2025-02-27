@@ -1,20 +1,7 @@
-from dataclasses import dataclass
 from typing import List, Protocol
 from uuid import UUID
 
-from pydantic import BaseModel
-
-
-@dataclass
-class ReceiptItem:
-    receipt_id: UUID
-    product_id: UUID
-    quantity: int
-
-
-class AddItemRequest(BaseModel):
-    product_id: UUID
-    quantity: int
+from app.core.Models.receipt import ReceiptItem
 
 
 class ReceiptItemRepository(Protocol):

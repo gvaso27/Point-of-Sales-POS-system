@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-from app.core.receipt import Receipt
+from app.core.Models.receipt import Receipt
 
 
-class ICampaign(ABC):
-    @abstractmethod
+class ICampaign(Protocol):
     def update(self, receipt: Receipt) -> None:
         pass
 

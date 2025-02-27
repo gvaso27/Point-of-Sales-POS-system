@@ -1,75 +1,20 @@
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
 from typing import List, Protocol
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel
-
+from app.core.campaign_observers import ICampaign
 from app.core.currency import Currency, CurrencyService
-from app.core.product import Product
-from app.core.receipt_item import AddItemRequest, ReceiptItem, ReceiptItemRepository
+from app.core.Models.product import Product
+from app.core.Models.receipt import (
+    AddItemRequest,
+    PaymentRequest,
+    QuoteResponse,
+    Receipt,
+    ReceiptItem,
+    ReceiptState,
+)
+from app.core.receipt_item import ReceiptItemRepository
 from app.core.shift import ShiftService
-
-
-class ReceiptState(str, Enum):
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-    PAYED = "PAYED"
-
-
-@dataclass
-class Receipt:
-    shift_id: UUID
-    state: ReceiptState = ReceiptState.OPEN
-    id: UUID = field(default_factory=uuid4)
-    created_at: datetime = field(default_factory=datetime.now)
-    subtotal: float = 0.0
-    total_discount: float = 0.0
-    payment_amount: float = 0.0
-    payment_currency: Currency | None = Currency.GEL
-
-    @property
-    def total(self) -> float:
-        return self.subtotal - self.total_discount
-
-    @property
-    def savings(self) -> float:
-        return self.total_discount
-
-
-class PaymentRequest(BaseModel):
-    amount: float
-    currency: Currency
-
-
-class QuoteRequest(BaseModel):
-    currency: Currency
-
-
-class QuoteResponse(BaseModel):
-    subtotal: float
-    total_discount: float
-    total: float
-    currency: Currency
-
-
-class ReceiptProduct(BaseModel):
-    id: UUID
-    name: str
-    price: float
-    quantity: int
-
-
-class GetReceiptResponse(BaseModel):
-    id: UUID
-    state: ReceiptState
-    items: List[ReceiptProduct]
-    subtotal: float
-    total_discount: float
-    total: float
-    savings: float
-    currency: Currency
 
 
 class ReceiptRepository(Protocol):
@@ -95,6 +40,7 @@ class ReceiptService:
     receipt_items: ReceiptItemRepository
     shift_service: ShiftService
     currency_service: CurrencyService
+    observers: List[ICampaign] = field(default_factory=list)
 
     def create(self) -> UUID:
         shift_id = self.shift_service.get_open_shift()
@@ -126,11 +72,11 @@ class ReceiptService:
         if current_item:
             item.quantity += current_item.quantity
             self.receipt_items.update(item)
-            return None
+        else:
+            self.receipt_items.create(item)
 
-        self.receipt_items.create(item)
-        # todo Zuka price update stuff
-        self.receipts.update(receipt)
+        for observer in self.observers:
+            observer.update(receipt)
 
     def calculate_total(self, receipt_id: UUID) -> float:
         receipt = self.receipts.read(receipt_id)
@@ -153,7 +99,7 @@ class ReceiptService:
 
         if receipt.state != ReceiptState.PAYED:
             raise ValueError(f"Cannot close receipt "
-                             f"that is not in {receipt.state} state")
+                             f"that is in {receipt.state} state")
 
         receipt.state = ReceiptState.CLOSED
         self.receipts.update(receipt)
@@ -236,6 +182,9 @@ class ReceiptService:
         receipt.payment_amount = payment.amount
         receipt.payment_currency = payment.currency
         self.receipts.update(receipt)
+
+    def add_observer(self, observer: ICampaign) -> None:
+        self.observers.append(observer)
 
     def _convert_currency(self, amount: float, target_currency: Currency) -> float:
         if target_currency == Currency.GEL:
