@@ -15,7 +15,7 @@ class XReportItem:
 
 @dataclass
 class ReportRevenue:
-    currency: Currency
+    currency: Currency | None
     amount: float
 
 
@@ -35,7 +35,7 @@ class ReportService:
     def generate_x_report(self) -> XReport:
         shift_id = self.shift_service.get_open_shift()
         if not shift_id:
-            raise ValueError(f"Shift is not open")
+            raise ValueError("Shift is not open")
 
         receipts = self.receipts.read_by_shift(shift_id.shift_id)
         item_sales = {}
@@ -73,7 +73,6 @@ class ReportService:
         revenue_by_currency = {}
 
         for receipt in receipts:
-            receipt_items = self.receipt_items.read_by_receipt(receipt.id)
             if receipt.payment_currency not in revenue_by_currency:
                 revenue_by_currency[receipt.payment_currency] = 0.0
             revenue_by_currency[receipt.payment_currency] += receipt.payment_amount

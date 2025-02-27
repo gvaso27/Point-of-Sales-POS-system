@@ -99,7 +99,7 @@ class ReceiptService:
     def create(self) -> UUID:
         shift_id = self.shift_service.get_open_shift()
         if not shift_id:
-            raise ValueError(f"Shift is not open")
+            raise ValueError("Shift is not open")
         receipt = Receipt(id=uuid4(),
                           shift_id=shift_id.shift_id)
         self.receipts.create(receipt)
@@ -152,7 +152,8 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.PAYED:
-            raise ValueError(f"Cannot close receipt that is not in {receipt.state} state")
+            raise ValueError(f"Cannot close receipt "
+                             f"that is not in {receipt.state} state")
 
         receipt.state = ReceiptState.CLOSED
         self.receipts.update(receipt)

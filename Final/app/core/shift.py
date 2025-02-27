@@ -17,7 +17,7 @@ class ShiftItem:
 
 
 class ShiftRepository(Protocol):
-    def create(self, receipt: ShiftItem) -> ShiftItem:
+    def create(self, receipt: ShiftItem) -> ShiftItem | None:
         pass
 
     def read(self, receipt_id: UUID) -> ShiftItem | None:
@@ -26,7 +26,7 @@ class ShiftRepository(Protocol):
     def update(self, receipt: ShiftItem) -> None:
         pass
 
-    def read_by_state(self, state: ShiftState) -> List[ShiftItem]:
+    def read_by_state(self, state: ShiftState) -> List[ShiftItem] | None:
         pass
 
 
@@ -41,7 +41,8 @@ class ShiftService:
     def create(self) -> UUID:
         open_shifts = self.shift_repo.read_by_state(ShiftState.OPEN)
         if open_shifts:
-            raise ValueError("An open shift already exists. Close it before creating a new one.")
+            raise ValueError("An open shift already exists. "
+                             "Close it before creating a new one.")
 
         shift_id = uuid4()
         shift = ShiftItem(shift_id=shift_id, state=ShiftState.OPEN)

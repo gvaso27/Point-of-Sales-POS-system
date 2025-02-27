@@ -6,16 +6,19 @@ from fastapi import APIRouter, HTTPException
 from app.core.currency import Currency
 from app.core.product import ProductService
 from app.core.receipt import (
+    GetReceiptResponse,
     PaymentRequest,
     QuoteRequest,
-    ReceiptService, GetReceiptResponse, ReceiptProduct,
+    ReceiptProduct,
+    ReceiptService,
 )
 from app.core.receipt_item import AddItemRequest
 from app.infrastructure.fastapi.dependables import (
     CurrencyServiceDependable,
     ProductRepositoryDependable,
     ReceiptItemRepositoryDependable,
-    ReceiptRepositoryDependable, ShiftServiceDependable,
+    ReceiptRepositoryDependable,
+    ShiftServiceDependable,
 )
 
 receipt_api: APIRouter = APIRouter()
@@ -30,7 +33,10 @@ def create_receipt(
         shift_service: ShiftServiceDependable
 ) -> dict[str, Any]:
     try:
-        service = ReceiptService(receipts, receipt_items, shift_service, currency_service)
+        service = ReceiptService(receipts,
+                                 receipt_items,
+                                 shift_service,
+                                 currency_service)
         receipt_id = service.create()
         return {"receipt_id": receipt_id}
     except ValueError as e:

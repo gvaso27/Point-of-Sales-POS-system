@@ -9,7 +9,6 @@ class InMemoryReceiptDb(ReceiptRepository):
         self.receipts: Dict[str, Receipt] = {}
 
     def up(self) -> None:
-        # No setup needed for in-memory storage
         pass
 
     def create(self, receipt: Receipt) -> Receipt:

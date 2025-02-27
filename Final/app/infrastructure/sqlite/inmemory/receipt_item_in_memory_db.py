@@ -12,10 +12,10 @@ class InMemoryReceiptItemDb(ReceiptItemRepository):
         pass
 
     def create(self, item: ReceiptItem) -> ReceiptItem:
-        self.receipt_items[str(item.id)] = item
+        self.receipt_items[str(item.receipt_id)] = item
         return item
 
-    def read(self, item_id: UUID) -> ReceiptItem | None:
+    def read(self, item_id: UUID, **kwargs) -> ReceiptItem | None:
         return self.receipt_items.get(str(item_id))
 
     def read_by_receipt(self, receipt_id: UUID) -> List[ReceiptItem]:

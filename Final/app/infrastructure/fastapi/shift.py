@@ -3,10 +3,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.report import XReport, ReportService, ReportRevenue
+from app.core.report import ReportRevenue, ReportService, XReport
 from app.core.shift import ShiftService
-from app.infrastructure.fastapi.dependables import ShiftRepositoryDependable, ReceiptRepositoryDependable, \
-    ReceiptItemRepositoryDependable, ShiftServiceDependable
+from app.infrastructure.fastapi.dependables import (
+    ReceiptItemRepositoryDependable,
+    ReceiptRepositoryDependable,
+    ShiftRepositoryDependable,
+    ShiftServiceDependable,
+)
 
 shift_api: APIRouter = APIRouter()
 
@@ -22,7 +26,8 @@ def open_shift(shifts: ShiftRepositoryDependable) -> dict[str, Any]:
 
 
 @shift_api.get("/shifts/state/{shift_id}")
-def get_shift_state(shift_id: UUID, shifts: ShiftRepositoryDependable) -> dict[str, str]:
+def get_shift_state(shift_id: UUID,
+                    shifts: ShiftRepositoryDependable) -> dict[str, str]:
     try:
         service = ShiftService(shifts)
         state = service.state(shift_id)
