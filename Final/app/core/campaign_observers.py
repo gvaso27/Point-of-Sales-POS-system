@@ -10,20 +10,20 @@ class ICampaign(ABC):
 
 
 class BuyNGetNCampaign(ICampaign):
-    def update(self, receipt: Receipt):
+    def update(self, receipt: Receipt) -> None:
         pass
 
 
 class DiscountCampaign(ICampaign):
-    def update(self, receipt: Receipt):
+    def update(self, receipt: Receipt) -> None:
         pass
 
 
 class ComboCampaign(ICampaign):
-    def update(self, receipt: Receipt):
+    def update(self, receipt: Receipt) -> None:
         pass
 
 
 class WholeReceiptDiscountCampaign(ICampaign):
-    def update(self, receipt: Receipt):
+    def update(self, receipt: Receipt) -> None:
         pass
