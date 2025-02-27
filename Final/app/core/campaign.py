@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Protocol
+from typing import List, Protocol, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
@@ -22,6 +22,7 @@ class Campaign:
     gift_amount: int
     gift_product_type: str
     id: UUID = field(default_factory=uuid4)
+    product_ids: List[str] = field(default_factory=list)
 
 
 class CreateCampaignRequest(BaseModel):
@@ -32,6 +33,7 @@ class CreateCampaignRequest(BaseModel):
     amount: int
     gift_amount: int
     gift_product_type: str
+    product_ids: Optional[List[str]] = None
 
 
 class CampaignRepository(Protocol):
@@ -46,7 +48,6 @@ class CampaignRepository(Protocol):
 
     def deactivate(self, campaign_id: UUID) -> None:
         pass
-
 
 @dataclass
 class CampaignService:
