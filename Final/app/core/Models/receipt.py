@@ -68,6 +68,7 @@ class GetReceiptResponse(BaseModel):
     savings: float
     currency: Currency
 
+
 @dataclass
 class ReceiptItem:
     receipt_id: UUID

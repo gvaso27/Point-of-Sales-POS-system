@@ -38,7 +38,7 @@ class ReceiptItemDb(ReceiptItemRepository):
                     str(item.receipt_id),
                     str(item.product_id),
                     item.quantity,
-                )
+                ),
             )
             connection.commit()
             return item
@@ -56,7 +56,7 @@ class ReceiptItemDb(ReceiptItemRepository):
                     item.quantity,
                     str(item.receipt_id),
                     str(item.product_id),
-                )
+                ),
             )
             connection.commit()
 
@@ -71,14 +71,12 @@ class ReceiptItemDb(ReceiptItemRepository):
                 (
                     str(item_id),
                     str(receipt_id),
-                )
+                ),
             )
             row = cursor.fetchone()
             if row:
                 return ReceiptItem(
-                    receipt_id=UUID(row[0]),
-                    product_id=UUID(row[1]),
-                    quantity=row[2]
+                    receipt_id=UUID(row[0]), product_id=UUID(row[1]), quantity=row[2]
                 )
             return None
 
@@ -87,15 +85,12 @@ class ReceiptItemDb(ReceiptItemRepository):
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM receipt_items WHERE receipt_id = ?",
-                (str(receipt_id),)
+                "SELECT * FROM receipt_items WHERE receipt_id = ?", (str(receipt_id),)
             )
             rows = cursor.fetchall()
             return [
                 ReceiptItem(
-                    receipt_id=UUID(row[0]),
-                    product_id=UUID(row[1]),
-                    quantity=row[2]
+                    receipt_id=UUID(row[0]), product_id=UUID(row[1]), quantity=row[2]
                 )
                 for row in rows
             ]

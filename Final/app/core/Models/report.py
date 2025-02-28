@@ -21,4 +21,3 @@ class XReport:
     receipt_number: int
     items_sold: list[XReportItem]
     revenue: list[ReportRevenue]
-

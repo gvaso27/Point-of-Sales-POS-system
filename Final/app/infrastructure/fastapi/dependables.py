@@ -39,9 +39,7 @@ def get_shift_service(request: Request) -> Any:
     return request.app.state.shift_service
 
 
-CurrencyServiceDependable = Annotated[
-    CurrencyService, Depends(get_currency_service)
-]
+CurrencyServiceDependable = Annotated[CurrencyService, Depends(get_currency_service)]
 
 ProductRepositoryDependable = Annotated[
     ProductRepository, Depends(get_product_repository)
@@ -59,10 +57,6 @@ ReceiptItemRepositoryDependable = Annotated[
     ReceiptItemRepository, Depends(get_receipt_item_repository)
 ]
 
-ShiftRepositoryDependable = Annotated[
-    ShiftRepository, Depends(get_shift_repository)
-]
+ShiftRepositoryDependable = Annotated[ShiftRepository, Depends(get_shift_repository)]
 
-ShiftServiceDependable = Annotated[
-    ShiftService, Depends(get_shift_service)
-]
+ShiftServiceDependable = Annotated[ShiftService, Depends(get_shift_service)]

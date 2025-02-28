@@ -34,15 +34,16 @@ class ShiftRepository(Protocol):
 class ShiftService:
     shift_repo: ShiftRepository
 
-    def __init__(self, shift_repo : ShiftRepository) -> None:
+    def __init__(self, shift_repo: ShiftRepository) -> None:
         self.shift_repo = shift_repo
         pass
 
     def create(self) -> UUID:
         open_shifts = self.shift_repo.read_by_state(ShiftState.OPEN)
         if open_shifts:
-            raise ValueError("An open shift already exists. "
-                             "Close it before creating a new one.")
+            raise ValueError(
+                "An open shift already exists. Close it before creating a new one."
+            )
 
         shift_id = uuid4()
         shift = ShiftItem(shift_id=shift_id, state=ShiftState.OPEN)

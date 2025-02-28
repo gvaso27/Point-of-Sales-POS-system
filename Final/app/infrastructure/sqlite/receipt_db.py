@@ -40,12 +40,17 @@ class ReceiptDb(ReceiptRepository):
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    str(receipt.id), str(receipt.shift_id),
-                    receipt.state.value, receipt.created_at,
-                    receipt.subtotal, receipt.total_discount,
+                    str(receipt.id),
+                    str(receipt.shift_id),
+                    receipt.state.value,
+                    receipt.created_at,
+                    receipt.subtotal,
+                    receipt.total_discount,
                     receipt.payment_amount,
-                    receipt.payment_currency.value if receipt.payment_currency else None
-                )
+                    receipt.payment_currency.value
+                    if receipt.payment_currency
+                    else None,
+                ),
             )
             connection.commit()
             return receipt
@@ -54,25 +59,22 @@ class ReceiptDb(ReceiptRepository):
         with sqlite3.connect(self.db_path) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
-            cursor.execute(
-                "SELECT * FROM receipts WHERE id = ?",
-                (str(receipt_id),)
-            )
+            cursor.execute("SELECT * FROM receipts WHERE id = ?", (str(receipt_id),))
             row = cursor.fetchone()
             if row:
                 payment_currency = None
-                if row['payment_currency']:
-                    payment_currency = Currency(row['payment_currency'])
+                if row["payment_currency"]:
+                    payment_currency = Currency(row["payment_currency"])
 
                 return Receipt(
-                    id=UUID(row['id']),
-                    shift_id=UUID(row['shift_id']),
-                    state=ReceiptState(row['state']),
-                    created_at=row['created_at'],
-                    subtotal=row['subtotal'],
-                    total_discount=row['total_discount'],
-                    payment_amount=row['payment_amount'],
-                    payment_currency=payment_currency
+                    id=UUID(row["id"]),
+                    shift_id=UUID(row["shift_id"]),
+                    state=ReceiptState(row["state"]),
+                    created_at=row["created_at"],
+                    subtotal=row["subtotal"],
+                    total_discount=row["total_discount"],
+                    payment_amount=row["payment_amount"],
+                    payment_currency=payment_currency,
                 )
             return None
 
@@ -97,8 +99,8 @@ class ReceiptDb(ReceiptRepository):
                     receipt.payment_currency.value
                     if receipt.payment_currency
                     else None,
-                    str(receipt.id)
-                )
+                    str(receipt.id),
+                ),
             )
             connection.commit()
 
@@ -107,26 +109,25 @@ class ReceiptDb(ReceiptRepository):
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
             cursor.execute(
-                "SELECT * FROM receipts WHERE shift_id = ?",
-                (str(shift_id),)
+                "SELECT * FROM receipts WHERE shift_id = ?", (str(shift_id),)
             )
             rows = cursor.fetchall()
             receipts = []
 
             for row in rows:
                 payment_currency = None
-                if row['payment_currency']:
-                    payment_currency = Currency(row['payment_currency'])
+                if row["payment_currency"]:
+                    payment_currency = Currency(row["payment_currency"])
 
                 receipt = Receipt(
-                    id=UUID(row['id']),
-                    shift_id=UUID(row['shift_id']),
-                    state=ReceiptState(row['state']),
-                    created_at=row['created_at'],
-                    subtotal=row['subtotal'],
-                    total_discount=row['total_discount'],
-                    payment_amount=row['payment_amount'],
-                    payment_currency=payment_currency
+                    id=UUID(row["id"]),
+                    shift_id=UUID(row["shift_id"]),
+                    state=ReceiptState(row["state"]),
+                    created_at=row["created_at"],
+                    subtotal=row["subtotal"],
+                    total_discount=row["total_discount"],
+                    payment_amount=row["payment_amount"],
+                    payment_currency=payment_currency,
                 )
                 receipts.append(receipt)
         return receipts
@@ -140,18 +141,18 @@ class ReceiptDb(ReceiptRepository):
             receipts = []
             for row in rows:
                 payment_currency = None
-                if row['payment_currency']:
-                    payment_currency = Currency(row['payment_currency'])
+                if row["payment_currency"]:
+                    payment_currency = Currency(row["payment_currency"])
 
                 receipt = Receipt(
-                    id=UUID(row['id']),
-                    shift_id=UUID(row['shift_id']),
-                    state=ReceiptState(row['state']),
-                    created_at=row['created_at'],
-                    subtotal=row['subtotal'],
-                    total_discount=row['total_discount'],
-                    payment_amount=row['payment_amount'],
-                    payment_currency=payment_currency
+                    id=UUID(row["id"]),
+                    shift_id=UUID(row["shift_id"]),
+                    state=ReceiptState(row["state"]),
+                    created_at=row["created_at"],
+                    subtotal=row["subtotal"],
+                    total_discount=row["total_discount"],
+                    payment_amount=row["payment_amount"],
+                    payment_currency=payment_currency,
                 )
                 receipts.append(receipt)
         return receipts
