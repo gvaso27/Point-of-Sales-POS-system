@@ -75,6 +75,7 @@ class ReceiptService:
         else:
             self.receipt_items.create(item)
 
+        receipt.subtotal += item.quantity * product.price
         for observer in self.observers:
             observer.update(receipt)
 
@@ -87,10 +88,9 @@ class ReceiptService:
             raise ValueError(f"Cannot calculate total for "
                              f"receipt in {receipt.state} state")
 
-        # todo Zuka price update stuff
         self.receipts.update(receipt)
 
-        return receipt.total
+        return receipt.subtotal-receipt.total_discount
 
     def close_receipt(self, receipt_id: UUID) -> None:
         receipt = self.receipts.read(receipt_id)
@@ -165,7 +165,6 @@ class ReceiptService:
                 converted_items.append(converted_item)
             return converted_items
 
-        # todo
         return items
 
     def process_payment(self, receipt_id: UUID, payment: PaymentRequest) -> None:
@@ -175,7 +174,7 @@ class ReceiptService:
 
         payment_in_gel = self._convert_to_gel(payment.amount, payment.currency)
 
-        if payment_in_gel != receipt.total:
+        if payment_in_gel != receipt.payment_amount:
             raise ValueError("Payment amount is not correct")
 
         receipt.state = ReceiptState.PAYED
