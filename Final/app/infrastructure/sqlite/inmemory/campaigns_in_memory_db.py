@@ -48,7 +48,7 @@ class InMemoryCampaignDb:
                 is_active=campaign.is_active,
                 amount=campaign.amount,
                 gift_amount=campaign.gift_amount,
-                gift_product_type=campaign.gift_product_type
+                gift_product_type=campaign.gift_product_type,
             )
 
             campaign_copy.product_ids = self.get_campaign_product_ids(campaign.id)
@@ -65,7 +65,9 @@ class InMemoryCampaignDb:
         campaign.is_active = False
         self.campaigns[campaign_id_str] = campaign
 
-    def add_campaign_product_ids(self, campaign_id: UUID, product_ids: List[str]) -> None:
+    def add_campaign_product_ids(
+        self, campaign_id: UUID, product_ids: List[str]
+    ) -> None:
         campaign_id_str = str(campaign_id)
         if campaign_id_str not in self.campaign_relations:
             self.campaign_relations[campaign_id_str] = []

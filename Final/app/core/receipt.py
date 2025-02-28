@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from typing import List, Protocol
 from uuid import UUID, uuid4
 
-from app.core.campaign_observers import ICampaign
 from app.core.currency import Currency, CurrencyService
 from app.core.Models.product import Product
 from app.core.Models.receipt import (
@@ -36,6 +35,8 @@ class ReceiptRepository(Protocol):
 
 @dataclass
 class ReceiptService:
+    from app.core.campaign_observers import ICampaign
+
     receipts: ReceiptRepository
     receipt_items: ReceiptItemRepository
     shift_service: ShiftService
@@ -46,15 +47,13 @@ class ReceiptService:
         shift_id = self.shift_service.get_open_shift()
         if not shift_id:
             raise ValueError("Shift is not open")
-        receipt = Receipt(id=uuid4(),
-                          shift_id=shift_id.shift_id)
+        receipt = Receipt(id=uuid4(), shift_id=shift_id.shift_id)
         self.receipts.create(receipt)
         return receipt.id
 
-    def add_item(self,
-                 receipt_id: UUID,
-                 add_request: AddItemRequest,
-                 product: Product) -> None:
+    def add_item(
+        self, receipt_id: UUID, add_request: AddItemRequest, product: Product
+    ) -> None:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -65,7 +64,7 @@ class ReceiptService:
         item = ReceiptItem(
             product_id=add_request.product_id,
             quantity=add_request.quantity,
-            receipt_id=receipt_id
+            receipt_id=receipt_id,
         )
 
         current_item = self.receipt_items.read(receipt_id, add_request.product_id)
@@ -85,12 +84,13 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.OPEN:
-            raise ValueError(f"Cannot calculate total for "
-                             f"receipt in {receipt.state} state")
+            raise ValueError(
+                f"Cannot calculate total for receipt in {receipt.state} state"
+            )
 
         self.receipts.update(receipt)
 
-        return receipt.subtotal-receipt.total_discount
+        return receipt.subtotal - receipt.total_discount
 
     def close_receipt(self, receipt_id: UUID) -> None:
         receipt = self.receipts.read(receipt_id)
@@ -98,8 +98,7 @@ class ReceiptService:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
 
         if receipt.state != ReceiptState.PAYED:
-            raise ValueError(f"Cannot close receipt "
-                             f"that is in {receipt.state} state")
+            raise ValueError(f"Cannot close receipt that is in {receipt.state} state")
 
         receipt.state = ReceiptState.CLOSED
         self.receipts.update(receipt)
@@ -117,12 +116,12 @@ class ReceiptService:
             subtotal=subtotal_converted,
             total_discount=discount_converted,
             total=total_converted,
-            currency=currency
+            currency=currency,
         )
 
-    def get_receipt(self,
-                    receipt_id: UUID,
-                    currency: Currency = Currency.GEL) -> Receipt:
+    def get_receipt(
+        self, receipt_id: UUID, currency: Currency = Currency.GEL
+    ) -> Receipt:
         receipt = self.receipts.read(receipt_id)
         if not receipt:
             raise ValueError(f"Receipt with id '{receipt_id}' does not exist")
@@ -136,23 +135,21 @@ class ReceiptService:
                 subtotal=self._convert_currency(receipt.subtotal, currency),
                 total_discount=self._convert_currency(receipt.total_discount, currency),
                 payment_amount=receipt.payment_amount,
-                payment_currency=receipt.payment_currency
+                payment_currency=receipt.payment_currency,
             )
 
             if receipt.payment_currency and receipt.payment_currency != currency:
                 converted_receipt.payment_amount = self.currency_service.convert(
-                    receipt.payment_amount,
-                    receipt.payment_currency,
-                    currency
+                    receipt.payment_amount, receipt.payment_currency, currency
                 )
                 converted_receipt.payment_currency = currency
 
             return converted_receipt
         return receipt
 
-    def get_receipt_items(self,
-                          receipt_id: UUID,
-                          currency: Currency = Currency.GEL) -> List[ReceiptItem]:
+    def get_receipt_items(
+        self, receipt_id: UUID, currency: Currency = Currency.GEL
+    ) -> List[ReceiptItem]:
         items = self.receipt_items.read_by_receipt(receipt_id)
         if currency != Currency.GEL:
             converted_items = []

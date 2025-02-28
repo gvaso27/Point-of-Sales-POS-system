@@ -24,19 +24,14 @@ class ReceiptFake:
     def add_item_request(self, product_id: UUID) -> Dict[str, Any]:
         return {
             "product_id": str(product_id),
-            "quantity": self.faker.random_int(min=1, max=10)
+            "quantity": self.faker.random_int(min=1, max=10),
         }
 
     def payment_request(self, amount: float) -> Dict[str, Any]:
-        return {
-            "amount": amount,
-            "currency": Currency.GEL.value
-        }
+        return {"amount": amount, "currency": Currency.GEL.value}
 
     def quote_request(self) -> Dict[str, Any]:
-        return {
-            "currency": Currency.USD.value
-        }
+        return {"currency": Currency.USD.value}
 
 
 @dataclass
@@ -46,14 +41,14 @@ class ProductFake:
     def product(self) -> Dict[str, Any]:
         return {
             "name": self.faker.word(),
-            "price": self.faker.random_int(min=10, max=1000)
+            "price": self.faker.random_int(min=10, max=1000),
         }
 
     def get_model(self) -> Product:
         return Product(
             name=self.faker.word(),
             id=uuid4(),
-            price=self.faker.random_int(min=10, max=1000)
+            price=self.faker.random_int(min=10, max=1000),
         )
 
 

@@ -6,7 +6,7 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from app.core.Models.campaign import Campaign, CampaignType
+from app.core.Models.campaign import CampaignType
 from app.infrastructure.sqlite.inmemory.campaigns_in_memory_db import InMemoryCampaignDb
 from app.runner.setup import init_app
 
@@ -18,14 +18,17 @@ class CampaignFake:
     def campaign(self) -> Dict[str, Any]:
         return {
             "type": CampaignType.BUY_N_GET_N.value,
-            "amount_to_exceed": round(self.faker.pyfloat(min_value=100.0, max_value=1000.0), 2),
+            "amount_to_exceed": round(
+                self.faker.pyfloat(min_value=100.0, max_value=1000.0), 2
+            ),
             "percentage": round(self.faker.pyfloat(min_value=5.0, max_value=30.0), 2),
             "is_active": True,
             "amount": self.faker.random_int(min=50, max=200),
             "gift_amount": self.faker.random_int(min=10, max=50),
             "gift_product_type": self.faker.word(),
-            "product_ids": [str(uuid4()), str(uuid4())]
+            "product_ids": [str(uuid4()), str(uuid4())],
         }
+
 
 @pytest.fixture
 def client() -> TestClient:
@@ -71,7 +74,9 @@ def test_deactivate_campaign(client: TestClient) -> None:
     campaign_id = response_create.json()["campaign"]["id"]
 
     campaigns_before = client.get("/campaigns").json()["campaigns"]
-    active_campaign = next((c for c in campaigns_before if c["id"] == campaign_id), None)
+    active_campaign = next(
+        (c for c in campaigns_before if c["id"] == campaign_id), None
+    )
     assert active_campaign is not None
     assert active_campaign["is_active"] is True
 
@@ -80,7 +85,9 @@ def test_deactivate_campaign(client: TestClient) -> None:
     assert response_deactivate.json() == {"status": "success"}
 
     campaigns_after = client.get("/campaigns").json()["campaigns"]
-    deactivated_campaign = next((c for c in campaigns_after if c["id"] == campaign_id), None)
+    deactivated_campaign = next(
+        (c for c in campaigns_after if c["id"] == campaign_id), None
+    )
     assert deactivated_campaign is not None
     assert deactivated_campaign["is_active"] is False
 

@@ -43,9 +43,7 @@ class ReportService:
         ]
 
         return XReport(
-            receipt_number=len(receipts),
-            items_sold=items_sold,
-            revenue=revenue
+            receipt_number=len(receipts), items_sold=items_sold, revenue=revenue
         )
 
     def generate_z_report(self) -> list[ReportRevenue]:

@@ -27,7 +27,7 @@ class ShiftDb(ShiftRepository):
                 """
                 INSERT INTO shifts (shift_id, state) VALUES (?, ?)
                 """,
-                (str(shift.shift_id), shift.state.value)
+                (str(shift.shift_id), shift.state.value),
             )
             connection.commit()
             return shift
@@ -36,15 +36,11 @@ class ShiftDb(ShiftRepository):
         with sqlite3.connect(self.db_path) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
-            cursor.execute(
-                "SELECT * FROM shifts WHERE shift_id = ?",
-                (str(shift_id),)
-            )
+            cursor.execute("SELECT * FROM shifts WHERE shift_id = ?", (str(shift_id),))
             row = cursor.fetchone()
             if row:
                 return ShiftItem(
-                    shift_id=UUID(row['shift_id']),
-                    state=ShiftState(row['state'])
+                    shift_id=UUID(row["shift_id"]), state=ShiftState(row["state"])
                 )
             return None
 
@@ -57,7 +53,7 @@ class ShiftDb(ShiftRepository):
                 SET state = ?
                 WHERE shift_id = ?
                 """,
-                (shift.state.value, str(shift.shift_id))
+                (shift.state.value, str(shift.shift_id)),
             )
             connection.commit()
 
@@ -65,17 +61,13 @@ class ShiftDb(ShiftRepository):
         with sqlite3.connect(self.db_path) as connection:
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
-            cursor.execute(
-                "SELECT * FROM shifts WHERE state = ?",
-                (state.value,)
-            )
+            cursor.execute("SELECT * FROM shifts WHERE state = ?", (state.value,))
             rows = cursor.fetchall()
             shifts = []
             for row in rows:
                 shifts.append(
                     ShiftItem(
-                        shift_id=UUID(row['shift_id']),
-                        state=ShiftState(row['state'])
+                        shift_id=UUID(row["shift_id"]), state=ShiftState(row["state"])
                     )
                 )
             return shifts

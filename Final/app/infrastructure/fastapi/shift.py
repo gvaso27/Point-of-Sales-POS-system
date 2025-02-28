@@ -27,8 +27,9 @@ def open_shift(shifts: ShiftRepositoryDependable) -> dict[str, Any]:
 
 
 @shift_api.get("/shifts/state/{shift_id}")
-def get_shift_state(shift_id: UUID,
-                    shifts: ShiftRepositoryDependable) -> dict[str, str]:
+def get_shift_state(
+    shift_id: UUID, shifts: ShiftRepositoryDependable
+) -> dict[str, str]:
     try:
         service = ShiftService(shifts)
         state = service.state(shift_id)
@@ -47,9 +48,11 @@ def close_shift(shift_id: UUID, shifts: ShiftRepositoryDependable) -> None:
 
 
 @shift_api.get("/shifts/x-reports")
-def get_x_report(receipts: ReceiptRepositoryDependable,
-                 receipt_items: ReceiptItemRepositoryDependable,
-                 shifts: ShiftServiceDependable) -> XReport:
+def get_x_report(
+    receipts: ReceiptRepositoryDependable,
+    receipt_items: ReceiptItemRepositoryDependable,
+    shifts: ShiftServiceDependable,
+) -> XReport:
     try:
         service = ReportService(receipts, receipt_items, shifts)
         return service.generate_x_report()
@@ -58,9 +61,11 @@ def get_x_report(receipts: ReceiptRepositoryDependable,
 
 
 @shift_api.get("/shifts/z-reports")
-def get_y_report(receipts: ReceiptRepositoryDependable,
-                 receipt_items: ReceiptItemRepositoryDependable,
-                 shifts: ShiftServiceDependable) -> list[ReportRevenue]:
+def get_y_report(
+    receipts: ReceiptRepositoryDependable,
+    receipt_items: ReceiptItemRepositoryDependable,
+    shifts: ShiftServiceDependable,
+) -> list[ReportRevenue]:
     try:
         service = ReportService(receipts, receipt_items, shifts)
         return service.generate_z_report()
