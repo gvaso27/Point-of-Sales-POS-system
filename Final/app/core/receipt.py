@@ -171,7 +171,7 @@ class ReceiptService:
 
         payment_in_gel = self._convert_to_gel(payment.amount, payment.currency)
 
-        if payment_in_gel != receipt.payment_amount:
+        if payment_in_gel != receipt.total:
             raise ValueError("Payment amount is not correct")
 
         receipt.state = ReceiptState.PAYED
