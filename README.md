@@ -75,7 +75,9 @@ Here’s a glimpse of available endpoints:
 - `POST /receipts/{receipt_id}/quotes` – Calculate total in selected currency  
 - `POST /receipts/{receipt_id}/payments` – Register a payment  
 - `GET /x-reports?shift_id={shift_id}` – Shift-specific report  
-- `GET /sales` – Lifetime sales report  
+- `GET /sales` – Lifetime sales report
+
+![API/docs](Pasted%20image.png)
 
 ---
 
